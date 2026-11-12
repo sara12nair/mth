@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Madras Trading House | Plot Sales Monitor & Team · Release 2611_12_2209 IST</title>
+    <title>Madras Trading House | Plot Sales Monitor & Team · Release 2611_12_2244 IST</title>
 
     <!-- PWA manifest + theme color: required for Chrome to offer "Install app" -->
     <link rel="manifest" href="./manifest.json">
@@ -1131,11 +1131,11 @@
 
 <div class="container">
 
-    <div class="app-brand-strip no-print" title="Release 2611_12_2209 IST">
+    <div class="app-brand-strip no-print" title="Release 2611_12_2244 IST">
         <img src="./icon-192.png" alt="Madras Trading House logo">
         <div class="app-brand-copy">
-            <strong>Madras Trading House</strong><!-- Release 2611_12_2209 IST; preserve approved header layout -->
-            <span>Plot Sales Monitor &amp; Team · Release 2611_12_2209 IST</span>
+            <strong>Madras Trading House</strong><!-- Release 2611_12_2244 IST; preserve approved header layout -->
+            <span>Plot Sales Monitor &amp; Team · Release 2611_12_2244 IST</span>
         </div>
     </div>
 
@@ -1759,7 +1759,7 @@
 
           <!-- MONTHLY MEETING MATRIX -->
           <div class="team-card">
-            <h3>Monthly Tabulated Scheduled Meeting Matrix</h3>
+            <h3>Monthly Tabulated Scheduled Meeting Matrix</h3><p style="font-size:12px;color:#666">M = Attended · E = Excused · • = Scheduled. Recorded attendance appears for every role, including meetings outside the assigned schedule.</p>
             <div style="display: flex; gap: 12px; align-items: center; background-color: #faf9f6; padding: 12px; border-radius: 6px; border: 1px solid #e2e0d8; margin-bottom: 16px; flex-wrap: wrap;">
               <label>Select Month & Year:</label>
               <select id="meetingMatrixMonth" onchange="renderMeetingMatrix()" style="padding:6px; border:1px solid #e2e0d8; border-radius:4px;"></select>
@@ -5034,6 +5034,23 @@ function renderAttendanceGrid() {
   document.getElementById('attendanceGridBody').innerHTML = bodyRows;
 }
 
+function mthMeetingKey(record) {
+  return JSON.stringify([record.date, record.memberName, record.meeting].map(v => String(v || '').trim().toLowerCase()));
+}
+
+function mthUniqueMeetingRecords() {
+  const records = new Map();
+  meetingRecords.forEach(record => records.set(mthMeetingKey(record), record));
+  return [...records.values()];
+}
+
+function renderMeetingAttendanceLogs() {
+  const tbody = document.getElementById('meetingLogTable');
+  if (!tbody) return;
+  const rows = mthUniqueMeetingRecords().sort((a, b) => String(b.date).localeCompare(String(a.date)));
+  tbody.innerHTML = rows.length ? rows.map(r => `<tr><td>${escapeHtml(r.date)}</td><td>${escapeHtml(r.meeting)}</td><td>${escapeHtml(r.memberName)}</td><td>${escapeHtml(r.role || 'Attended')}</td></tr>`).join('') : '<tr><td colspan="4">No meeting attendance recorded.</td></tr>';
+}
+
 function saveMeetingAttendance() {
   const rawMeetingVal = document.getElementById('meetName').value;
   const customTitle = document.getElementById('customMeetTitle').value.trim();
@@ -5042,20 +5059,33 @@ function saveMeetingAttendance() {
   const dateStr = document.getElementById('meetDate').value;
   const role = document.getElementById('meetRole').value;
 
-  if (!meetingName || !dateStr || !memberName) return alert("Fill required meeting fields.");
-  meetingRecords.push({ date: dateStr, meeting: meetingName, memberName, role });
+  if (!meetingName || !dateStr || !memberName || (rawMeetingVal === 'CUSTOM' && !customTitle)) return alert("Fill required meeting fields.");
+  const record = { date: dateStr, meeting: meetingName, memberName, role };
+  const key = mthMeetingKey(record);
+  const alreadyRecorded = meetingRecords.some(r => mthMeetingKey(r) === key);
+  // A second save updates this attendance rather than adding another count.
+  meetingRecords = meetingRecords.filter(r => mthMeetingKey(r) !== key);
+  meetingRecords.push(record);
   autoSaveTeamState();
+  document.getElementById('meetingMatrixMonth').value = String(Number(dateStr.slice(5, 7)) - 1);
+  const yearSelect = document.getElementById('meetingMatrixYear');
+  const year = dateStr.slice(0, 4);
+  if (![...yearSelect.options].some(option => option.value === year)) yearSelect.add(new Option(year, year));
+  yearSelect.value = year;
   renderMeetingMatrix();
-  alert("Meeting recorded!");
+  generateAndPrintReport();
+  alert(alreadyRecorded ? "Attendance updated. No duplicate added." : "Meeting recorded!");
 }
 
 function renderMeetingMatrix() {
+  renderMeetingAttendanceLogs();
   const month = parseInt(document.getElementById('meetingMatrixMonth').value), year = parseInt(document.getElementById('meetingMatrixYear').value);
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const selectedRoles = Array.from(document.querySelectorAll('.role-filter-matrix:checked')).map(cb => cb.value);
 
   // Automatically computed recurring schedule instances for this month
   const autoMeetings = getDynamicMeetingDates(year, month);
+  const recordedMeetings = mthUniqueMeetingRecords();
 
   let headRow = `<tr><th>Member Name</th><th>Assigned Scheduled Meeting</th>`;
   for (let i = 1; i <= daysInMonth; i++) headRow += `<th>${i}</th>`;
@@ -5076,7 +5106,14 @@ function renderMeetingMatrix() {
       let cellDisplay = '-';
       let styleAttr = '';
 
-      if (override) {
+      const records = recordedMeetings.filter(r => String(r.memberName || '').trim().toLowerCase() === String(m.name || '').trim().toLowerCase() && r.date === dayStr);
+      const attended = records.some(r => r.role !== 'Excused');
+      // Actual attendance is visible for every role, including meetings outside
+      // the member's default assignment and meetings held despite an override.
+      if (records.length) {
+          cellDisplay = attended ? 'M' : 'E';
+          styleAttr = attended ? 'text-align:center; font-weight:bold; color:var(--success);' : 'text-align:center; color:#d97706;';
+      } else if (override) {
           if (override.status.includes('Cancel')) {
               cellDisplay = '❌';
               styleAttr = 'background-color: #fee2e2; color: #dc2626; text-align: center;';
@@ -5085,12 +5122,12 @@ function renderMeetingMatrix() {
               styleAttr = 'background-color: #fef3c7; color: #d97706; text-align: center;';
           }
       } else if (isScheduled) {
-          const attended = meetingRecords.some(r => r.memberName === m.name && r.date === dayStr);
-          cellDisplay = attended ? 'M' : '•';
-          styleAttr = attended ? 'text-align:center; font-weight:bold; color:var(--success);' : 'text-align:center; color:#94a3b8;';
+          cellDisplay = '•';
+          styleAttr = 'text-align:center; color:#94a3b8;';
       }
 
-      row += `<td style="${styleAttr}">${cellDisplay}</td>`;
+      const details = records.map(r => `${r.meeting}: ${r.role || 'Attended'}`).join('; ');
+      row += `<td style="${styleAttr}" title="${escapeHtml(details)}">${cellDisplay}</td>`;
     }
     bodyRows += `<tr>${row}</tr>`;
   });
@@ -5104,7 +5141,7 @@ function generateAndPrintReport() {
   tbody.innerHTML = '';
 
   membersData.filter(m => mthMemberIsVisible(m) && m.designation !== 'CP').forEach(member => {
-    let filteredMeet = meetingRecords.filter(r => r.memberName === member.name && (!startDate || r.date >= startDate) && (!endDate || r.date <= endDate));
+    let filteredMeet = mthUniqueMeetingRecords().filter(r => String(r.memberName || '').trim().toLowerCase() === String(member.name || '').trim().toLowerCase() && r.role !== 'Excused' && (!startDate || r.date >= startDate) && (!endDate || r.date <= endDate));
     let filteredAtt = attendanceRecords.filter(r => r.member === member.name && (!startDate || r.date >= startDate) && (!endDate || r.date <= endDate));
     let bom = filteredMeet.filter(r => r.meeting.includes('BOM')).length;
     let bdm = filteredMeet.filter(r => r.meeting.includes('BDM')).length;
