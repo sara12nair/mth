@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Madras Trading House | Plot Sales Monitor & Team · Release 2611_03_1132 IST</title>
+    <title>Madras Trading House | Plot Sales Monitor & Team · Release 2611_12_2209 IST</title>
 
     <!-- PWA manifest + theme color: required for Chrome to offer "Install app" -->
     <link rel="manifest" href="./manifest.json">
@@ -1131,11 +1131,11 @@
 
 <div class="container">
 
-    <div class="app-brand-strip no-print" title="Release 2611_03_1132 IST">
+    <div class="app-brand-strip no-print" title="Release 2611_12_2209 IST">
         <img src="./icon-192.png" alt="Madras Trading House logo">
         <div class="app-brand-copy">
-            <strong>Madras Trading House</strong><!-- Release 2611_03_1132 IST; preserve approved header layout -->
-            <span>Plot Sales Monitor &amp; Team · Release 2611_03_1132 IST</span>
+            <strong>Madras Trading House</strong><!-- Release 2611_12_2209 IST; preserve approved header layout -->
+            <span>Plot Sales Monitor &amp; Team · Release 2611_12_2209 IST</span>
         </div>
     </div>
 
@@ -1146,6 +1146,9 @@
     </div>
 
     <!-- ========================================== -->
+    <label class="no-print" style="display:block;text-align:right;font-size:12px;margin:0 2px 10px;cursor:pointer">
+        <input type="checkbox" id="mthShowInactiveMembers" onchange="mthRefreshMemberVisibility()"> Show inactive members
+    </label>
     <!-- VIEW 1: PLOT TRACKER & BOOKING ENGINE      -->
     <!-- ========================================== -->
     <div id="viewPlotTracker" class="app-view-container active">
@@ -1659,9 +1662,7 @@
               <label>End Date:</label>
               <input type="date" id="teamReportEndDate" style="padding:6px; border:1px solid #e2e0d8; border-radius:4px;">
               
-              <label style="margin-left: 8px; font-weight: normal; cursor: pointer; display: flex; align-items: center; gap: 4px;">
-                <input type="checkbox" id="teamIncludeInactiveCheckbox" onchange="generateAndPrintReport()"> Include Hold & Cold Leads
-              </label>
+
 
               <button type="button" class="team-btn-secondary" onclick="generateAndPrintReport()">🔄 Update View</button>
               <button type="button" class="team-btn" style="background-color: #1b5e20;" onclick="exportReportToExcel()">📊 Export to Excel (.xlsx)</button>
@@ -1674,7 +1675,7 @@
 
             <div id="printableReportArea">
               <div style="border-bottom: 2px solid #8b3a2b; padding-bottom: 6px; margin-bottom: 12px;">
-                <h3 style="font-size: 15px; margin: 0; text-transform: uppercase;">Active Team Performance & Attendance Summary</h3>
+                <h3 style="font-size: 15px; margin: 0; text-transform: uppercase;">Team Performance & Attendance Summary</h3>
                 <p style="font-size: 12px; color: #666; margin-top: 2px;">Team Sashi Nair — Generated on: <span id="reportGeneratedDate"></span></p>
               </div>
 
@@ -1685,7 +1686,7 @@
                       <th>Member Name</th>
                       <th>Designation</th>
                       <th>Reports To / Upline</th>
-                      <th>Lead Status</th>
+                      <th>Status</th>
                       <th>BOM Summary (1-4)</th>
                       <th>BDM Summary (1-4)</th>
                       <th>Total Meetings Ratio</th>
@@ -1830,15 +1831,6 @@
                   </select>
                 </div>
                 <div class="team-form-group">
-                  <label>Lead / Status *</label>
-                  <select id="leadStatus" required>
-                    <option value="HOT">Hot (Active)</option>
-                    <option value="WARM">Warm (Active)</option>
-                    <option value="COLD">Cold (Inactive / Low Engagement)</option>
-                    <option value="HOLD">Hold (On Hold / Suspended)</option>
-                  </select>
-                </div>
-                <div class="team-form-group">
                   <label>Date Joined / Onboarded *</label>
                   <input type="date" id="joiningDate" required>
                 </div>
@@ -1917,7 +1909,6 @@
                     <th class="sortable-header" onclick="sortDirectory('name')">Member <span id="sort-name"></span></th>
                     <th class="sortable-header" onclick="sortDirectory('designation')">Designation <span id="sort-designation"></span></th>
                     <th class="sortable-header" onclick="sortDirectory('reportsTo')">Reports To / Upline <span id="sort-reportsTo"></span></th>
-                    <th class="sortable-header" onclick="sortDirectory('leadStatus')">Lead Status <span id="sort-leadStatus"></span></th>
                     <th class="sortable-header" onclick="sortDirectory('joiningDate')">Date Joined <span id="sort-joiningDate"></span></th>
                     <th class="sortable-header" onclick="sortDirectory('tenure')">Tenure <span id="sort-tenure"></span></th>
                     <th class="sortable-header" onclick="sortDirectory('assignedSchedule')">Assigned Schedule <span id="sort-assignedSchedule"></span></th>
@@ -2226,11 +2217,11 @@ function generatePayId(designation, reportsToName) {
 
 function getTeamGenealogy() {
   let structure = { dvpDirectBDMs: [], dvpDirectSMs: [], bdmSubTeams: [] };
-  let directRecruits = membersData.filter(m => m.reportsTo === "Sashi Nair" || !m.reportsTo || m.reportsTo === "");
+  let directRecruits = membersData.filter(m => mthMemberIsVisible(m) && (m.reportsTo === "Sashi Nair" || !m.reportsTo || m.reportsTo === ""));
 
   directRecruits.forEach(member => {
     if (member.designation === "BDM") {
-      let subSMs = membersData.filter(m => m.reportsTo === member.name);
+      let subSMs = membersData.filter(m => mthMemberIsVisible(m) && m.reportsTo === member.name);
       structure.bdmSubTeams.push({ bdm: member.name, smList: subSMs });
       structure.dvpDirectBDMs.push(member.name);
     } else if (member.designation === "SM") {
@@ -4490,7 +4481,7 @@ function renderArchivedProjects() {
         const stats = archivedProjectStats(project);
         const id = project.archiveMeta.id;
         return `<div style="border:1px solid var(--border-color); border-radius:6px; padding:10px; margin-bottom:8px; background:#fff;">
-            <div style="display:flex; justify-content:space-between; gap:10px; align-items:flex-start; flex-wrap:wrap;">
+            <div style="display:flex; flex-direction:column; gap:10px; align-items:stretch;">
                 <div>
                     <div style="font-weight:800; color:var(--primary);">${archiveHtml(project.name)}</div>
                     <div style="font-size:.72rem; color:var(--text-muted); margin-top:3px;">Closed: ${formatArchiveDate(project.archiveMeta.closedOn)} · Sold ${stats.sold}/${stats.total} plots · Archived by ${archiveHtml(project.archiveMeta.archivedBy || '-')}</div>
@@ -4581,6 +4572,32 @@ function importArchivedProject(event) {
     reader.readAsText(file);
 }
 
+// Active / Inactive is the only current team status. Legacy fields remain stored for compatibility.
+function mthMemberIsActive(member) {
+  return !!member && member.active !== false && String(member.active).toLowerCase() !== 'false'
+    && !['INACTIVE', 'DEACTIVATED'].includes(String(member.membershipStatus || member.status || member.leadStatus || '').trim().toUpperCase());
+}
+function mthShowInactive() { return !!document.getElementById('mthShowInactiveMembers')?.checked; }
+function mthMemberIsVisible(member) { return mthShowInactive() || mthMemberIsActive(member); }
+function mthRefreshMemberVisibility() {
+  renderMemberTable();
+  renderAttendanceLogsTable();
+  renderTeamGenealogyUI();
+  if (window.mthRefreshSaleMembers) window.mthRefreshSaleMembers();
+  if (window.mthRefreshHistoryMembers) window.mthRefreshHistoryMembers();
+}
+function mthSetMemberInactive(index, inactive) {
+  const member = membersData[index];
+  if (!member) return;
+  member.active = !inactive;
+  autoSaveTeamState();
+  mthRefreshMemberVisibility();
+}
+function mthKeepSelectedMember(select, name, designation) {
+  if (!select || !name) return;
+  if (![...select.options].some(o => o.value === name)) select.add(new Option(name + (designation ? ' (' + designation + ')' : '') + ' [inactive / existing]', name));
+  select.value = name;
+}
 let currentDesignationFilter = 'ALL';
 let currentSortKey = 'name';
 let currentSortAsc = true;
@@ -4622,7 +4639,7 @@ function sortDirectory(key) {
 }
 
 function updateSortIndicators() {
-  ['name', 'designation', 'reportsTo', 'leadStatus', 'joiningDate', 'tenure', 'assignedSchedule'].forEach(k => {
+  ['name', 'designation', 'reportsTo', 'joiningDate', 'tenure', 'assignedSchedule'].forEach(k => {
     const el = document.getElementById(`sort-${k}`);
     if (el) el.textContent = (k === currentSortKey) ? (currentSortAsc ? '▲' : '▼') : '';
   });
@@ -4736,7 +4753,7 @@ function processImportedMembers(importedRows) {
     const getVal = (...keys) => {
       for (let k of keys) {
         const foundKey = Object.keys(row).find(rk => rk.trim().toLowerCase() === k.toLowerCase());
-        if (foundKey && row[foundKey]) return String(row[foundKey]).trim();
+        if (foundKey && row[foundKey] !== undefined && row[foundKey] !== null && String(row[foundKey]).trim() !== '') return String(row[foundKey]).trim();
       }
       return '';
     };
@@ -4746,13 +4763,15 @@ function processImportedMembers(importedRows) {
     const reportsToName = getVal('reportsto', 'reports to', 'upline') || 'Sashi Nair';
     const memberObj = {
       name, phone: getVal('phone'), designation: desig, reportsTo: reportsToName,
-      leadStatus: (getVal('leadstatus', 'lead') || 'COLD').toUpperCase(),
       joiningDate: getVal('joiningdate', 'date joined') || new Date().toISOString().split('T')[0],
       assignedSchedule: getVal('assignedschedule', 'schedule') || '-- No meeting scheduled --',
       footnote: getVal('footnote', 'notes') || '', payId: generatePayId(desig, reportsToName)
     };
     const existingIdx = membersData.findIndex(m => m.name.toLowerCase() === name.toLowerCase());
-    if (existingIdx > -1) { membersData[existingIdx] = memberObj; updatedCount++; }
+    const activeValue = getVal('active', 'membership', 'membership status', 'status');
+    if (activeValue) memberObj.active = !['false', '0', 'no', 'inactive', 'deactivated'].includes(activeValue.toLowerCase());
+    else if (existingIdx > -1 && membersData[existingIdx].active !== undefined) memberObj.active = membersData[existingIdx].active;
+    if (existingIdx > -1) { membersData[existingIdx] = { ...membersData[existingIdx], ...memberObj }; updatedCount++; }
     else { membersData.push(memberObj); addedCount++; }
   });
   autoSaveTeamState();
@@ -4771,24 +4790,32 @@ function renderMemberDropdowns() {
   const attSelect = document.getElementById('attMember');
   const meetSelect = document.getElementById('meetMember');
   const reportsToSelect = document.getElementById('reportsToSelect');
+  const previousSelections = [attSelect, meetSelect, reportsToSelect].map(select => select?.value || '');
   const meetDesig = document.getElementById('meetDesigFilter') ? document.getElementById('meetDesigFilter').value : 'ALL';
 
   if (attSelect) attSelect.innerHTML = '<option value="">-- Select Active Member --</option>';
   if (meetSelect) meetSelect.innerHTML = '<option value="">-- Select Active Member --</option>';
   if (reportsToSelect) reportsToSelect.innerHTML = '<option value="">-- Select Upline Sponsor --</option>';
 
-  (appData.mthSaleTeamDirectory || []).filter(m => m.role === 'VP' && m.active && !membersData.some(t => t.name === m.name)).forEach(m => {
+  (appData.mthSaleTeamDirectory || []).filter(m => m.role === 'VP' && mthMemberIsVisible(m) && !membersData.some(t => t.name === m.name)).forEach(m => {
     if (reportsToSelect) reportsToSelect.add(new Option(`${m.name} (VP)`, m.name));
   });
-  membersData.forEach(m => {
+  membersData.filter(mthMemberIsVisible).forEach(m => {
     if (m.designation === 'CP') return;
-    if (attSelect && ['HOT', 'WARM'].includes(m.leadStatus)) attSelect.add(new Option(`${m.name} (${m.designation})`, m.name));
-    if (meetSelect && ['HOT', 'WARM'].includes(m.leadStatus) && (meetDesig === 'ALL' || m.designation === meetDesig)) {
+    if (attSelect) attSelect.add(new Option(`${m.name} (${m.designation})`, m.name));
+    if (meetSelect && (meetDesig === 'ALL' || m.designation === meetDesig)) {
       meetSelect.add(new Option(`${m.name} (${m.designation})`, m.name));
     }
     if (reportsToSelect && ['VP', 'DVP', 'BDM'].includes(m.designation)) {
       reportsToSelect.add(new Option(`${m.name} (${m.designation})`, m.name));
     }
+  });
+  [attSelect, meetSelect, reportsToSelect].forEach((select, index) => {
+    if (!select || !previousSelections[index]) return;
+    const name = previousSelections[index];
+    if ([...select.options].some(option => option.value === name)) select.value = name;
+    else if ((index === 0 && document.getElementById('attendanceEditIndex').value !== '') ||
+             (index === 2 && document.getElementById('memberEditIndex').value !== '')) mthKeepSelectedMember(select, name);
   });
 }
 
@@ -4799,7 +4826,7 @@ function renderMemberTable() {
   renderMemberDropdowns();
   updateSortIndicators();
 
-  let filtered = membersData.map((m, originalIndex) => ({ ...m, originalIndex }));
+  let filtered = membersData.map((m, originalIndex) => ({ ...m, originalIndex })).filter(mthMemberIsVisible);
   if (currentDesignationFilter !== 'ALL') filtered = filtered.filter(m => m.designation === currentDesignationFilter);
 
   filtered.sort((a, b) => {
@@ -4809,11 +4836,9 @@ function renderMemberTable() {
   });
 
   filtered.forEach(m => {
-    let badge = m.leadStatus === 'HOT' ? 'badge-hot' : (m.leadStatus === 'WARM' ? 'badge-warm' : 'badge-cold');
     tbody.innerHTML += `<tr>
-      <td><button type="button" class="btn-edit" onclick="editMember(${m.originalIndex})">Edit</button></td>
-      <td>${escapeHtml(m.name)}</td><td>${escapeHtml(m.designation)}</td><td>${escapeHtml(m.reportsTo || '-')}</td>
-      <td><span class="badge ${badge}">${escapeHtml(m.leadStatus)}</span></td>
+      <td><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><button type="button" class="btn-edit" onclick="editMember(${m.originalIndex})">Edit</button><label style="display:inline-flex;align-items:center;gap:4px;font-size:11px;cursor:pointer;white-space:nowrap"><input type="checkbox" aria-label="Inactive: ${escapeHtml(m.name)}" ${mthMemberIsActive(m) ? '' : 'checked'} onchange="mthSetMemberInactive(${m.originalIndex}, this.checked)"> Inactive</label></div></td>
+      <td>${escapeHtml(m.name)}${mthMemberIsActive(m) ? '' : ' <small style="color:#777">(Inactive)</small>'}</td><td>${escapeHtml(m.designation)}</td><td>${escapeHtml(m.reportsTo || '-')}</td>
       <td>${escapeHtml(m.joiningDate)}</td><td>${escapeHtml(calculateTenure(m.joiningDate))}</td><td>${escapeHtml(m.assignedSchedule)}</td>
     </tr>`;
   });
@@ -4847,10 +4872,9 @@ function editMember(index) {
   document.getElementById('memberName').value = m.name;
   document.getElementById('phoneNumber').value = m.phone || '';
   document.getElementById('memberDesignation').value = m.designation;
-  document.getElementById('leadStatus').value = m.leadStatus;
   document.getElementById('joiningDate').value = m.joiningDate;
   document.getElementById('assignedSchedule').value = m.assignedSchedule;
-  document.getElementById('reportsToSelect').value = m.reportsTo || '';
+  mthKeepSelectedMember(document.getElementById('reportsToSelect'), m.reportsTo); 
   document.getElementById('footnote').value = m.footnote || '';
   if (document.getElementById('payIdDisplay')) document.getElementById('payIdDisplay').value = m.payId;
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -4873,8 +4897,10 @@ function saveMemberRecord() {
 
   const payId = generatePayId(designation, reportsTo);
   const memberObj = {
+    ...(editIndex === '' ? {} : membersData[Number(editIndex)]),
+    active: editIndex === '' ? true : mthMemberIsActive(membersData[Number(editIndex)]),
     name, phone: document.getElementById('phoneNumber').value.trim(), designation, reportsTo,
-    leadStatus: document.getElementById('leadStatus').value, joiningDate: document.getElementById('joiningDate').value,
+    joiningDate: document.getElementById('joiningDate').value,
     assignedSchedule: document.getElementById('assignedSchedule').value, footnote: document.getElementById('footnote').value.trim(), payId
   };
 
@@ -4882,7 +4908,7 @@ function saveMemberRecord() {
   else membersData[parseInt(editIndex)] = memberObj;
 
   autoSaveTeamState();
-  renderMemberTable();
+  mthRefreshMemberVisibility();
   if (document.getElementById('payIdDisplay')) document.getElementById('payIdDisplay').value = payId;
   alert("Member profile saved successfully!");
   resetMemberForm();
@@ -4959,6 +4985,8 @@ function renderAttendanceLogsTable() {
   if (!tbody) return;
   tbody.innerHTML = '';
   attendanceRecords.forEach((r, idx) => {
+    const member = membersData.find(m => m.name === r.member);
+    if (member && !mthMemberIsVisible(member)) return;
     tbody.innerHTML += `<tr>
       <td><button class="btn-edit" onclick="editAttendanceRecord(${idx})">Edit</button> <button class="btn btn-danger" style="padding:2px 5px;" onclick="attendanceRecords.splice(${idx},1);autoSaveTeamState();renderAttendanceLogsTable();">Del</button></td>
       <td>${escapeHtml(r.date)}</td><td>${escapeHtml(r.member)}</td><td>${escapeHtml(r.inTime)}</td><td>${escapeHtml(r.outTime)}</td><td>${escapeHtml(r.totalTime)}</td><td>${escapeHtml(r.notes)}</td>
@@ -4969,7 +4997,7 @@ function renderAttendanceLogsTable() {
 function editAttendanceRecord(idx) {
   const r = attendanceRecords[idx];
   document.getElementById('attendanceEditIndex').value = idx;
-  document.getElementById('attMember').value = r.member;
+  mthKeepSelectedMember(document.getElementById('attMember'), r.member);
   document.getElementById('attDate').value = r.date;
   document.getElementById('attInTime').value = r.inTime;
   document.getElementById('attOutTime').value = r.outTime;
@@ -4993,7 +5021,7 @@ function renderAttendanceGrid() {
   document.getElementById('attendanceGridHead').innerHTML = headRow;
 
   let bodyRows = '';
-  membersData.filter(m => m.designation !== 'CP' && ['HOT', 'WARM'].includes(m.leadStatus) && selectedRoles.includes(m.designation)).forEach(m => {
+  membersData.filter(m => mthMemberIsVisible(m) && m.designation !== 'CP' && selectedRoles.includes(m.designation)).forEach(m => {
     let count = 0, row = `<td>${escapeHtml(m.name)}</td><td>${escapeHtml(m.designation)}</td>`;
     for (let day = 1; day <= daysInMonth; day++) {
       const dayStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
@@ -5035,7 +5063,7 @@ function renderMeetingMatrix() {
   document.getElementById('meetingMatrixHead').innerHTML = headRow;
 
   let bodyRows = '';
-  membersData.filter(m => m.designation !== 'CP' && ['HOT', 'WARM'].includes(m.leadStatus) && selectedRoles.includes(m.designation)).forEach(m => {
+  membersData.filter(m => mthMemberIsVisible(m) && m.designation !== 'CP' && selectedRoles.includes(m.designation)).forEach(m => {
     let row = `<td>${escapeHtml(m.name)}</td><td>${escapeHtml(m.assignedSchedule)}</td>`;
     for (let day = 1; day <= daysInMonth; day++) {
       const dayStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
@@ -5071,12 +5099,11 @@ function renderMeetingMatrix() {
 
 function generateAndPrintReport() {
   const startDate = document.getElementById('teamReportStartDate').value, endDate = document.getElementById('teamReportEndDate').value;
-  const includeInactive = document.getElementById('teamIncludeInactiveCheckbox').checked;
   const tbody = document.getElementById('reportTableBody');
   if (!tbody) return;
   tbody.innerHTML = '';
 
-  membersData.filter(m => m.designation !== 'CP' && (includeInactive || ['HOT', 'WARM'].includes(m.leadStatus))).forEach(member => {
+  membersData.filter(m => mthMemberIsVisible(m) && m.designation !== 'CP').forEach(member => {
     let filteredMeet = meetingRecords.filter(r => r.memberName === member.name && (!startDate || r.date >= startDate) && (!endDate || r.date <= endDate));
     let filteredAtt = attendanceRecords.filter(r => r.member === member.name && (!startDate || r.date >= startDate) && (!endDate || r.date <= endDate));
     let bom = filteredMeet.filter(r => r.meeting.includes('BOM')).length;
@@ -5084,7 +5111,7 @@ function generateAndPrintReport() {
 
     tbody.innerHTML += `<tr>
       <td>${escapeHtml(member.name)}</td><td>${escapeHtml(member.designation)}</td><td>${escapeHtml(member.reportsTo)}</td>
-      <td>${escapeHtml(member.leadStatus)}</td><td>${bom}/4</td><td>${bdm}/4</td><td>${filteredMeet.length}/4</td><td>${filteredAtt.length} days</td>
+      <td>${mthMemberIsActive(member) ? 'Active' : 'Inactive'}</td><td>${bom}/4</td><td>${bdm}/4</td><td>${filteredMeet.length}/4</td><td>${filteredAtt.length} days</td>
     </tr>`;
   });
 }
@@ -5434,27 +5461,28 @@ function directory(){
  if(!Array.isArray(appData.mthSaleTeamDirectory)) appData.mthSaleTeamDirectory=defaults.map(x=>({...x}));
  return appData.mthSaleTeamDirectory;
 }
-function option(member,selected){return '<option value="'+escapeHtml(member.id)+'"'+(member.id===selected?' selected':'')+'>'+escapeHtml(member.name+' ('+member.code+')')+'</option>';}
+function option(member,selected){return '<option value="'+escapeHtml(member.id)+'"'+(member.id===selected?' selected':'')+'>'+escapeHtml(member.name+' ('+member.code+')'+(mthMemberIsActive(member)?'':' [inactive]'))+'</option>';}
+window.mthRefreshSaleMembers = renderMembers;
 function renderMembers(){
  const members=directory();
  const selectedVP=byId('mthSaleVP').value;
  const parentVP=byId('mthSaleMemberVP').value||selectedVP;
- byId('mthSaleMemberVP').innerHTML='<option value="">Select parent VP</option>'+members.filter(x=>x.role==='VP'&&x.active).map(x=>option(x,parentVP)).join('');
+ byId('mthSaleMemberVP').innerHTML='<option value="">Select parent VP</option>'+members.filter(x=>x.role==='VP'&&mthMemberIsVisible(x)).map(x=>option(x,parentVP)).join('');
  mthSaleMemberRoleChanged();
- byId('mthSaleVP').innerHTML='<option value="">Select VP</option>'+members.filter(x=>x.role==='VP'&&(x.active||x.id===selectedVP)).map(x=>option(x,selectedVP)).join('');
+ byId('mthSaleVP').innerHTML='<option value="">Select VP</option>'+members.filter(x=>x.role==='VP'&&(mthMemberIsVisible(x)||x.id===editProject?.plots?.[editIdx]?.mthSaleDetails?.vpId)).map(x=>option(x,selectedVP)).join('');
  mthSaleVPChanged();
  const list=byId('mthSaleDirectory');
- list.innerHTML=members.map(x=>'<div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap;margin:5px 0;font-size:12px">'+
+ list.innerHTML=members.filter(mthMemberIsVisible).map(x=>'<div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap;margin:5px 0;font-size:12px">'+
  '<span style="flex:1;min-width:110px">'+escapeHtml(x.role+': '+x.name+(x.role==='DVP'?' · '+(members.find(v=>v.id===x.parentVPId)?.code||'Unassigned'):''))+'</span>'+
  '<input aria-label="Code for '+escapeHtml(x.name)+'" style="width:75px!important" maxlength="12" value="'+escapeHtml(x.code)+'" data-member-code="'+escapeHtml(x.id)+'">'+
- '<button type="button" data-member-toggle="'+escapeHtml(x.id)+'">'+(x.active?'Deactivate':'Activate')+'</button></div>').join('');
+ '<button type="button" data-member-toggle="'+escapeHtml(x.id)+'">'+(mthMemberIsActive(x)?'Deactivate':'Activate')+'</button></div>').join('');
  list.querySelectorAll('[data-member-code]').forEach(input=>input.addEventListener('change',()=>{
   const code=input.value.trim().toUpperCase();
   if(!code || members.some(x=>x.id!==input.dataset.memberCode&&x.code.toUpperCase()===code)){alert('Enter a unique nonempty code.');renderMembers();return;}
   members.find(x=>x.id===input.dataset.memberCode).code=code;autoSaveState();renderMembers();
  }));
  list.querySelectorAll('[data-member-toggle]').forEach(btn=>btn.addEventListener('click',()=>{
-  const m=members.find(x=>x.id===btn.dataset.memberToggle);m.active=!m.active;autoSaveState();renderMembers();
+  const m=members.find(x=>x.id===btn.dataset.memberToggle);m.active=!mthMemberIsActive(m);autoSaveState();renderMembers();renderMemberDropdowns();
  }));
 }
 window.mthSaleMemberRoleChanged=function(){
@@ -5467,7 +5495,7 @@ window.mthSaleVPChanged=function(){
  const vp=directory().find(x=>x.id===selected);
  byId('mthSaleDVPLabel').textContent='DVP under '+(vp?.name||'selected VP')+(selected==='vp-anu'?'':' (optional)');
  const previous=byId('mthSaleDVP').value;
- byId('mthSaleDVP').innerHTML='<option value="">'+(selected==='vp-anu'?'Select DVP':'VP only / DVP unknown')+'</option>'+directory().filter(x=>x.role==='DVP'&&x.parentVPId===selected&&(x.active||x.id===previous)).map(x=>option(x,previous)).join('');
+ byId('mthSaleDVP').innerHTML='<option value="">'+(selected==='vp-anu'?'Select DVP':'VP only / DVP unknown')+'</option>'+directory().filter(x=>x.role==='DVP'&&x.parentVPId===selected&&(mthMemberIsVisible(x)||x.id===editProject?.plots?.[editIdx]?.mthSaleDetails?.dvpId)).map(x=>option(x,previous)).join('');
  byId('mthSaleDVP').insertAdjacentHTML('beforeend','<option value="__direct_vp__"'+(previous==='__direct_vp__'?' selected':'')+'>Direct to VP (No DVP)</option>');
 };
 window.mthOpenSaleDetails=function(idx){
@@ -5476,6 +5504,7 @@ window.mthOpenSaleDetails=function(idx){
  byId('mthSaleTitle').textContent='Sale Details — Plot '+plot.plotNo;
  byId('mthSaleSub').textContent='Project: '+p.name+' · Status: '+(plot.status||'Vacant');
  const members=directory(),sale=plot.mthSaleDetails||{};
+ byId('mthSaleVP').value='';byId('mthSaleDVP').value='';
  renderMembers();
  if(sale.vpId && !members.some(x=>x.id===sale.vpId&&x.active)){
   const old=members.find(x=>x.id===sale.vpId);if(old)byId('mthSaleVP').insertAdjacentHTML('beforeend',option(old,sale.vpId));
@@ -5604,7 +5633,15 @@ window.mthBuildHistoryRows=function(projects){
  }));
  return rows.sort((a,b)=>String(a.project).localeCompare(String(b.project))||String(a.plot).localeCompare(String(b.plot),undefined,{numeric:true})||a.sequence-b.sequence);
 };
-function opts(role,parent){return (appData.mthSaleTeamDirectory||[]).filter(m=>m.role===role&&(!parent||m.parentVPId===parent)).map(m=>'<option value="'+esc(m.id)+'">'+esc(m.name+' ('+m.code+')'+(!m.active?' [inactive]':''))+'</option>').join('');}
+function opts(role,parent){return (appData.mthSaleTeamDirectory||[]).filter(m=>mthMemberIsVisible(m)&&m.role===role&&(!parent||m.parentVPId===parent)).map(m=>'<option value="'+esc(m.id)+'">'+esc(m.name+' ('+m.code+')'+(!m.active?' [inactive]':''))+'</option>').join('');}
+window.mthRefreshHistoryMembers=function(){
+ const vp=el('mthHistVP').value,dvp=el('mthHistDVP').value;
+ el('mthHistVP').innerHTML='<option value="">All VPs</option>'+opts('VP');
+ if ([...el('mthHistVP').options].some(o=>o.value===vp)) el('mthHistVP').value=vp;
+ mthHistoryVPChanged();
+ if ([...el('mthHistDVP').options].some(o=>o.value===dvp)) el('mthHistDVP').value=dvp;
+ if(el('mthHistoryOverlay').style.display==='block')mthRenderHistoryReport();
+};
 window.mthOpenHistoryReport=function(){
  el('mthHistProject').innerHTML='<option value="">All projects</option>'+(appData.projects||[]).map((p,i)=>'<option value="'+i+'">'+esc(p.name)+'</option>').join('');
  el('mthHistProject').value=String(appData.activeProjectIndex||0);
@@ -6437,7 +6474,7 @@ function mthPdfDownloadFile(){
 function mthPdfCurrentProjectLabel(){return getActiveProject()?.name||'Project';}
 function mthPdfVacant(){updateReportTimestamp();updateVacantReport();const face=mthGetFaceFilter();return mthPdfFromElement(document.getElementById('printableVacantReport'),{title:mthPdfCurrentProjectLabel()+' - Vacant Plots',filter:(face?face+' facing':'All facings')+' | '+(document.getElementById('mthVacantRangeHeading')?.textContent||'All areas')});}
 function mthPdfCostSheet(){updateReportTimestamp();renderReport();return mthPdfFromElement(document.getElementById('printableReport'),{title:mthPdfCurrentProjectLabel()+' - '+(document.getElementById('docTypeQuote')?.checked?'Estimate':'Booking'),filter:'Plots '+Array.from(document.getElementById('plotMultiSelect').selectedOptions).map(o=>o.value).join(', ')});}
-function mthPdfTeam(){generateAndPrintReport();document.getElementById('reportGeneratedDate').textContent=new Date().toLocaleDateString('en-IN');return mthPdfFromElement(document.getElementById('printableReportArea'),{title:'Team Performance and Attendance',landscape:true,filter:(document.getElementById('teamReportStartDate').value||'Beginning')+' to '+(document.getElementById('teamReportEndDate').value||'Latest')+' | '+(document.getElementById('teamIncludeInactiveCheckbox').checked?'Including Hold and Cold':'Active core team')});}
+function mthPdfTeam(){generateAndPrintReport();document.getElementById('reportGeneratedDate').textContent=new Date().toLocaleDateString('en-IN');return mthPdfFromElement(document.getElementById('printableReportArea'),{title:'Team Performance and Attendance',landscape:true,filter:(document.getElementById('teamReportStartDate').value||'Beginning')+' to '+(document.getElementById('teamReportEndDate').value||'Latest')+' | '+(mthShowInactive()?'Including inactive members':'Active members')});}
 function mthPdfDailyLogs(){renderDailyLogsTable();const holder=document.createElement('div');holder.innerHTML='<h1>Daily Logs and Field Journal</h1>';holder.appendChild(document.getElementById('dailyLogTableContainer').cloneNode(true));return mthPdfFromElement(holder,{title:'Daily Logs and Field Journal',filter:document.getElementById('logFilterSelect').selectedOptions[0].textContent+(document.getElementById('logSearchInput').value?' | Search: '+document.getElementById('logSearchInput').value:'')});}
 function mthPdfProjectInfo(){const p=mthInfoCurrent();if(!p){alert('The selected project changed. Reopen Project Info.');return;}mthPdfFromHTML(mthInfoPrintHTML(p),{title:p.name+' - Project Overview',filter:'All project details'});}
 </script>
