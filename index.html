@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Madras Trading House | Plot Sales Monitor & Team · Release 2611_14_2035 IST</title>
+    <title>Madras Trading House | Plot Sales Monitor & Team · Release 2611_14_2337 IST</title>
 
     <!-- PWA manifest + theme color: required for Chrome to offer "Install app" -->
     <link rel="manifest" href="./manifest.json">
@@ -1131,11 +1131,11 @@
 
 <div class="container">
 
-    <div class="app-brand-strip no-print" title="Release 2611_14_2035 IST">
+    <div class="app-brand-strip no-print" title="Release 2611_14_2337 IST">
         <img src="./icon-192.png" alt="Madras Trading House logo">
         <div class="app-brand-copy">
-            <strong>Madras Trading House</strong><!-- Release 2611_14_2035 IST; preserve approved header layout -->
-            <span>Plot Sales Monitor &amp; Team · Release 2611_14_2035 IST</span>
+            <strong>Madras Trading House</strong><!-- Release 2611_14_2337 IST; preserve approved header layout -->
+            <span>Plot Sales Monitor &amp; Team · Release 2611_14_2337 IST</span>
         </div>
     </div>
 
@@ -1149,7 +1149,7 @@
     <div class="no-print" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px">
     <button type="button" class="btn btn-outline" onclick="mthOpenSaleDirectory()">👥 VP / DVP Directory</button>
     <label style="display:block;text-align:right;font-size:12px;margin:0 2px;cursor:pointer">
-        <input type="checkbox" id="mthShowInactiveMembers" onchange="mthRefreshMemberVisibility()"> Show inactive members
+        <input type="checkbox" id="mthShowInactiveMembers" onchange="mthSetTeamStatusMode(this.checked?'all':'active')"> Include inactive members
     </label></div>
     <!-- VIEW 1: PLOT TRACKER & BOOKING ENGINE      -->
     <!-- ========================================== -->
@@ -1411,7 +1411,7 @@
                     </div>
                     <div class="form-group"><label id="docDateInputLabel">Quote Date</label><input type="date" id="docDateInput" onchange="renderReport()"></div>
                     <div class="form-group"><label>Buyer Name</label><input type="text" id="buyerName" value="" placeholder="Enter buyer name" oninput="renderReport()"></div>
-                    <div class="form-group"><label>Buyer Phone</label><input type="text" id="buyerPhone" value="" inputmode="tel" maxlength="12" placeholder="XXXX-XXX-XXX" oninput="mthFormatBuyerPhone(this); renderReport()"></div>
+                    <div class="form-group"><label>Buyer Phone</label><input type="text" id="buyerPhone" value="" inputmode="tel" maxlength="25" placeholder="9876-543-210" oninput="mthFormatBuyerPhone(this); renderReport()"></div>
                     <div class="form-group"><label>Buyer Email</label><input type="text" id="buyerEmail" value="" placeholder="Enter email address" oninput="renderReport()"></div>
                     <div class="form-group"><label>Postal Address</label><input type="text" id="buyerAddress" value="" placeholder="Enter postal address" oninput="renderReport()"></div>
                     <div class="form-group" id="advanceInputContainer"><label id="advanceInputLabel">Advance Payable (₹)</label><input type="number" id="advancePaid" value="0" min="0" oninput="mthUpdateBookingAdvance(this)"></div>
@@ -1632,7 +1632,7 @@
     <div id="viewTeamPortal" class="app-view-container">
       <div class="team-portal-container">
         <header class="team-header">
-          <h1>Team SR Nair</h1>
+          <h1>Team SR Nair</h1><p style="font-size:12px;margin:5px 0">Current VP: <strong>Anu</strong> · from 01 September 2026</p>
           <div class="header-meta">
             <span class="header-badge">Team Leader / Admin: <strong>Sashi Nair (DVP)</strong></span>
             <span class="header-badge">Data current through: <strong><span id="teamDataCurrentThrough">01 Aug 2026</span></strong></span>
@@ -1690,7 +1690,7 @@
                 <table class="team-data-table" id="summaryReportTable">
                   <thead>
                     <tr>
-                      <th>Member Name</th>
+                      <th>Member Name</th><th>Phone</th>
                       <th>Designation</th>
                       <th>Reports To / Upline</th>
                       <th>Status</th>
@@ -1819,7 +1819,7 @@
                 </div>
                 <div class="team-form-group">
                   <label>Phone Number</label>
-                  <input type="tel" id="phoneNumber" placeholder="Enter phone number">
+                  <input type="tel" id="phoneNumber" placeholder="9876-543-210" class="mth-phone-number" oninput="mthFormatPhoneInput(this)">
                 </div>
                 <div class="team-form-group">
                   <label>Role / Designation *</label>
@@ -1891,6 +1891,7 @@
           <!-- GROUPED DIRECTORY BY DESIGNATION TABS -->
           <div class="team-card">
             <h3>Core Team Directory (Grouped by Designation)</h3>
+            <div class="mth-team-directory-tools"><label for="mthTeamStatusFilter">Members <select id="mthTeamStatusFilter" onchange="mthSetTeamStatusMode(this.value)"><option value="active" selected>Active only</option><option value="inactive">Inactive only</option><option value="all">Active + inactive</option></select></label><button type="button" class="team-btn" onclick="mthPdfMemberDirectory()">📄 Member List PDF</button><button type="button" class="team-btn-secondary" onclick="mthExportMemberDirectoryExcel()">Export Excel</button></div><p id="mthTeamDirectoryCount" class="mth-team-filter-summary" aria-live="polite"></p>
             <div class="team-sub-tabs">
               <button class="team-sub-tab-btn active" onclick="filterDirectoryByDesignation('ALL', this)">ALL</button>
               <button class="team-sub-tab-btn" onclick="filterDirectoryByDesignation('DVP', this)">DVP</button>
@@ -1899,8 +1900,8 @@
               <button class="team-sub-tab-btn" onclick="filterDirectoryByDesignation('CP', this)">CP (Roster Only)</button>
             </div>
 
-            <!-- TEAM GENEALOGY & LEG BREAKDOWN SUMMARY CARD -->
-            <div class="team-card">
+            <!-- TEAM GENEALOGY & LEG BREAKDOWN SUMMARY CARD: hidden by request; data/functions retained -->
+            <div class="team-card" id="mthHiddenGenealogyPanel" hidden>
               <h3>📊 Team Hierarchy & Direct/Indirect Leg Breakdown</h3>
               <div id="teamGenealogySummary" style="font-size: 13px; line-height: 1.6; margin-bottom: 10px; color: #2c2c2c;">
                 Click the button below to generate your team tree and leg counts.
@@ -1914,6 +1915,7 @@
                   <tr>
                     <th>Action</th>
                     <th class="sortable-header" onclick="sortDirectory('name')">Member <span id="sort-name"></span></th>
+                    <th class="sortable-header" onclick="sortDirectory('phone')">Phone <span id="sort-phone"></span></th>
                     <th class="sortable-header" onclick="sortDirectory('designation')">Designation <span id="sort-designation"></span></th>
                     <th class="sortable-header" onclick="sortDirectory('reportsTo')">Reports To / Upline <span id="sort-reportsTo"></span></th>
                     <th class="sortable-header" onclick="sortDirectory('joiningDate')">Date Joined <span id="sort-joiningDate"></span></th>
@@ -2807,10 +2809,7 @@ function deleteBankRow(idx) {
     autoSaveState();
 }
 
-function mthFormatBuyerPhone(input) {
-    const digits = input.value.replace(/\D/g, "").slice(0, 10);
-    input.value = digits.length > 7 ? `${digits.slice(0,4)}-${digits.slice(4,7)}-${digits.slice(7)}` : digits.length > 4 ? `${digits.slice(0,4)}-${digits.slice(4)}` : digits;
-}
+function mthFormatBuyerPhone(input) { mthFormatPhoneInput(input); }
 
 function toggleDocumentType() {
     mthResetCostSheetEntries();
@@ -3700,8 +3699,7 @@ function renderReport() {
 
     document.getElementById("rptProjName").textContent = p.name || "PROJECT NAME";
     document.getElementById("rptBuyerName").textContent = document.getElementById("buyerName").value.trim() || "-";
-    const buyerPhoneDigits = document.getElementById("buyerPhone").value.replace(/\D/g, "");
-    document.getElementById("rptBuyerPhone").textContent = buyerPhoneDigits.length === 10 ? `${buyerPhoneDigits.slice(0,4)}-${buyerPhoneDigits.slice(4,7)}-${buyerPhoneDigits.slice(7)}` : (document.getElementById("buyerPhone").value.trim() || "-");
+    document.getElementById('rptBuyerPhone').textContent=mthPhoneDisplay(document.getElementById('buyerPhone').value)||'-';
     document.getElementById("rptBuyerEmail").textContent = document.getElementById("buyerEmail").value.trim() || "-";
     document.getElementById("rptBuyerAddress").textContent = document.getElementById("buyerAddress").value.trim() || "-";
     document.getElementById("rptCoordinatorName").textContent = document.getElementById("coordinatorName").value || "Sashi R Nair";
@@ -4665,6 +4663,7 @@ function mthSetMemberInactive(index, inactive) {
   const member = membersData[index];
   if (!member) return;
   member.active = !inactive;
+  if(!inactive)for(const key of ['membershipStatus','status','leadStatus'])if(/^(INACTIVE|DEACTIVATED)$/i.test(String(member[key]||'')))member[key]='ACTIVE';
   autoSaveTeamState();
   mthRefreshMemberVisibility();
 }
@@ -4714,7 +4713,7 @@ function sortDirectory(key) {
 }
 
 function updateSortIndicators() {
-  ['name', 'designation', 'reportsTo', 'joiningDate', 'tenure', 'assignedSchedule'].forEach(k => {
+  ['name', 'phone', 'designation', 'reportsTo', 'joiningDate', 'tenure', 'assignedSchedule'].forEach(k => {
     const el = document.getElementById(`sort-${k}`);
     if (el) el.textContent = (k === currentSortKey) ? (currentSortAsc ? '▲' : '▼') : '';
   });
@@ -4872,10 +4871,10 @@ function renderMemberDropdowns() {
   if (meetSelect) meetSelect.innerHTML = '<option value="">-- Select Active Member --</option>';
   if (reportsToSelect) reportsToSelect.innerHTML = '<option value="">-- Select Upline Sponsor --</option>';
 
-  (appData.mthSaleTeamDirectory || []).filter(m => m.role === 'VP' && mthMemberIsVisible(m) && !membersData.some(t => t.name === m.name)).forEach(m => {
-    if (reportsToSelect) reportsToSelect.add(new Option(`${m.name} (VP)`, m.name));
-  });
-  membersData.filter(mthMemberIsVisible).forEach(m => {
+  const currentVP=mthTeamCurrentVP();
+  const vpInRoster=membersData.some(m=>m.designation==='VP'&&mthTeamNameKey(m.name)===mthTeamNameKey(currentVP)&&mthTeamMemberIsVisible(m));
+  if(reportsToSelect&&!vpInRoster)reportsToSelect.add(new Option(currentVP+' (VP)',currentVP));
+  membersData.filter(mthTeamMemberIsVisible).forEach(m => {
     if (m.designation === 'CP') return;
     if (attSelect) attSelect.add(new Option(`${m.name} (${m.designation})`, m.name));
     if (meetSelect && (meetDesig === 'ALL' || m.designation === meetDesig)) {
@@ -4901,19 +4900,13 @@ function renderMemberTable() {
   renderMemberDropdowns();
   updateSortIndicators();
 
-  let filtered = membersData.map((m, originalIndex) => ({ ...m, originalIndex })).filter(mthMemberIsVisible);
-  if (currentDesignationFilter !== 'ALL') filtered = filtered.filter(m => m.designation === currentDesignationFilter);
-
-  filtered.sort((a, b) => {
-    let valA = a[currentSortKey], valB = b[currentSortKey];
-    if (currentSortKey === 'joiningDate') { valA = new Date(a.joiningDate); valB = new Date(b.joiningDate); }
-    return currentSortAsc ? (valA > valB ? 1 : -1) : (valA < valB ? 1 : -1);
-  });
+  const filtered=mthFilteredTeamMembers();
+  mthRefreshTeamDirectoryCount();
 
   filtered.forEach(m => {
     tbody.innerHTML += `<tr>
       <td><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><button type="button" class="btn-edit" onclick="editMember(${m.originalIndex})">Edit</button><label style="display:inline-flex;align-items:center;gap:4px;font-size:11px;cursor:pointer;white-space:nowrap"><input type="checkbox" aria-label="Inactive: ${escapeHtml(m.name)}" ${mthMemberIsActive(m) ? '' : 'checked'} onchange="mthSetMemberInactive(${m.originalIndex}, this.checked)"> Inactive</label></div></td>
-      <td>${escapeHtml(m.name)}${mthMemberIsActive(m) ? '' : ' <small style="color:#777">(Inactive)</small>'}</td><td>${escapeHtml(m.designation)}</td><td>${escapeHtml(m.reportsTo || '-')}</td>
+      <td>${escapeHtml(m.name)}${mthMemberIsActive(m) ? '' : ' <small style="color:#777">(Inactive)</small>'}</td><td>${mthPhoneHTML(m.phone)}</td><td>${escapeHtml(m.designation)}</td><td>${escapeHtml(mthTeamReportsTo(m) || '-')}</td>
       <td>${escapeHtml(m.joiningDate)}</td><td>${escapeHtml(calculateTenure(m.joiningDate))}</td><td>${escapeHtml(m.assignedSchedule)}</td>
     </tr>`;
   });
@@ -4945,11 +4938,13 @@ function editMember(index) {
   if (!m) return;
   document.getElementById('memberEditIndex').value = index;
   document.getElementById('memberName').value = m.name;
-  document.getElementById('phoneNumber').value = m.phone || '';
+  document.getElementById('phoneNumber').value = mthPhoneDisplay(m.phone);
+  document.getElementById('memberBirthday').value=m.birthday||m.memberBirthday||m.dob||'';
+  document.getElementById('familyAnniversary').value=m.importantDate||m.familyAnniversary||m.anniversary||'';
   document.getElementById('memberDesignation').value = m.designation;
   document.getElementById('joiningDate').value = m.joiningDate;
   document.getElementById('assignedSchedule').value = m.assignedSchedule;
-  mthKeepSelectedMember(document.getElementById('reportsToSelect'), m.reportsTo); 
+  mthKeepSelectedMember(document.getElementById('reportsToSelect'), mthTeamReportsTo(m)); 
   document.getElementById('footnote').value = m.footnote || '';
   if (document.getElementById('payIdDisplay')) document.getElementById('payIdDisplay').value = m.payId;
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -4965,7 +4960,7 @@ function saveMemberRecord() {
   const editIndex = document.getElementById('memberEditIndex').value;
   const name = document.getElementById('memberName').value.trim();
   const designation = document.getElementById('memberDesignation').value;
-  const reportsTo = document.getElementById('reportsToSelect').value;
+  const reportsTo = mthTeamReportsTo({name,designation,reportsTo:document.getElementById('reportsToSelect').value});
 
   if (!name) return alert("Member Name cannot be blank.");
   if (!reportsTo && !['DVP', 'VP'].includes(designation)) return alert("Please select an upline sponsor.");
@@ -4974,7 +4969,8 @@ function saveMemberRecord() {
   const memberObj = {
     ...(editIndex === '' ? {} : membersData[Number(editIndex)]),
     active: editIndex === '' ? true : mthMemberIsActive(membersData[Number(editIndex)]),
-    name, phone: document.getElementById('phoneNumber').value.trim(), designation, reportsTo,
+    name, phone: mthPhoneForStorage(document.getElementById('phoneNumber').value), designation, reportsTo,
+    birthday:document.getElementById('memberBirthday').value,importantDate:document.getElementById('familyAnniversary').value,
     joiningDate: document.getElementById('joiningDate').value,
     assignedSchedule: document.getElementById('assignedSchedule').value, footnote: document.getElementById('footnote').value.trim(), payId
   };
@@ -5061,7 +5057,7 @@ function renderAttendanceLogsTable() {
   tbody.innerHTML = '';
   attendanceRecords.forEach((r, idx) => {
     const member = membersData.find(m => m.name === r.member);
-    if (member && !mthMemberIsVisible(member)) return;
+    if (member && !mthTeamMemberIsVisible(member)) return;
     tbody.innerHTML += `<tr>
       <td><button class="btn-edit" onclick="editAttendanceRecord(${idx})">Edit</button> <button class="btn btn-danger" style="padding:2px 5px;" onclick="attendanceRecords.splice(${idx},1);autoSaveTeamState();renderAttendanceLogsTable();">Del</button></td>
       <td>${escapeHtml(r.date)}</td><td>${escapeHtml(r.member)}</td><td>${escapeHtml(r.inTime)}</td><td>${escapeHtml(r.outTime)}</td><td>${escapeHtml(r.totalTime)}</td><td>${escapeHtml(r.notes)}</td>
@@ -5096,7 +5092,7 @@ function renderAttendanceGrid() {
   document.getElementById('attendanceGridHead').innerHTML = headRow;
 
   let bodyRows = '';
-  membersData.filter(m => mthMemberIsVisible(m) && m.designation !== 'CP' && selectedRoles.includes(m.designation)).forEach(m => {
+  membersData.filter(m => mthTeamMemberIsVisible(m) && m.designation !== 'CP' && selectedRoles.includes(m.designation)).forEach(m => {
     let count = 0, row = `<td>${escapeHtml(m.name)}</td><td>${escapeHtml(m.designation)}</td>`;
     for (let day = 1; day <= daysInMonth; day++) {
       const dayStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
@@ -5178,7 +5174,7 @@ function renderMeetingMatrix() {
   document.getElementById('meetingMatrixHead').innerHTML = headRow;
 
   let bodyRows = '';
-  membersData.filter(m => mthMemberIsVisible(m) && m.designation !== 'CP' && selectedRoles.includes(m.designation)).forEach(m => {
+  membersData.filter(m => mthTeamMemberIsVisible(m) && m.designation !== 'CP' && selectedRoles.includes(m.designation)).forEach(m => {
     let row = `<td>${escapeHtml(m.name)}</td><td>${escapeHtml(m.assignedSchedule)}</td>`;
     for (let day = 1; day <= daysInMonth; day++) {
       const dayStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
@@ -5225,22 +5221,25 @@ function generateAndPrintReport() {
   if (!tbody) return;
   tbody.innerHTML = '';
 
-  membersData.filter(m => mthMemberIsVisible(m) && m.designation !== 'CP').forEach(member => {
+  membersData.filter(m => mthTeamMemberIsVisible(m) && m.designation !== 'CP').forEach(member => {
     let filteredMeet = mthUniqueMeetingRecords().filter(r => String(r.memberName || '').trim().toLowerCase() === String(member.name || '').trim().toLowerCase() && r.role !== 'Excused' && (!startDate || r.date >= startDate) && (!endDate || r.date <= endDate));
     let filteredAtt = attendanceRecords.filter(r => r.member === member.name && (!startDate || r.date >= startDate) && (!endDate || r.date <= endDate));
     let bom = filteredMeet.filter(r => r.meeting.includes('BOM')).length;
     let bdm = filteredMeet.filter(r => r.meeting.includes('BDM')).length;
 
     tbody.innerHTML += `<tr>
-      <td>${escapeHtml(member.name)}</td><td>${escapeHtml(member.designation)}</td><td>${escapeHtml(member.reportsTo)}</td>
+      <td>${escapeHtml(member.name)}</td><td>${mthPhoneHTML(member.phone)}</td><td>${escapeHtml(member.designation)}</td><td>${escapeHtml(mthTeamReportsTo(member))}</td>
       <td>${mthMemberIsActive(member) ? 'Active' : 'Inactive'}</td><td>${bom}/4</td><td>${bdm}/4</td><td>${filteredMeet.length}/4</td><td>${filteredAtt.length} days</td>
     </tr>`;
   });
 }
 
 function exportReportToExcel() {
-  const wb = XLSX.utils.table_to_workbook(document.getElementById('summaryReportTable'), { sheet: "Summary" });
-  XLSX.writeFile(wb, `Attendance_Report_${new Date().toISOString().split('T')[0]}.xlsx`);
+  generateAndPrintReport();
+  const table=document.getElementById('summaryReportTable');
+  const headers=Array.from(table.querySelectorAll('thead th')).map(cell=>cell.textContent.trim());
+  const rows=Array.from(table.querySelectorAll('tbody tr')).map(row=>Array.from(row.cells).map(cell=>cell.textContent.trim()));
+  return mthDownloadWorkbook('Attendance_Report',headers,rows,headers.findIndex(text=>/phone/i.test(text)));
 }
 
 function sendBirthdayWish(name) {
@@ -6643,5 +6642,119 @@ function mthToggleSummaryPreview() {
 </style>
 <script>if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mthLimitMeetingDate);else mthLimitMeetingDate();</script>
 
+
+<style id="mth-team-directory-update">
+.mth-phone-number,#phoneNumber,#buyerPhone,#rptBuyerPhone,a[href^="tel:"]{font-weight:700!important;font-variant-numeric:lining-nums tabular-nums!important;letter-spacing:.2px}
+.mth-phone-number{white-space:nowrap}
+#mthHiddenGenealogyPanel[hidden]{display:none!important}
+.mth-team-directory-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0}
+.mth-team-directory-tools label{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:600}
+.mth-team-directory-tools select{padding:8px;border:1px solid #c7c5bd;border-radius:5px;font:inherit;background:white}
+.mth-team-filter-summary{font-size:12px;color:#625c53;margin:6px 0 12px}
+#directoryTable th:nth-child(3),#directoryTable td:nth-child(3){white-space:nowrap}
+@media(max-width:600px){.mth-team-directory-tools{align-items:stretch}.mth-team-directory-tools>label{width:100%}.mth-team-directory-tools>button{flex:1}}
+</style>
+<script>
+// Current Team settings are separate from historical plot-sale attribution.
+function mthTeamCurrentVP(){return (appData.mthSaleTeamDirectory||[]).find(m=>m.id==='vp-anu')?.name||'Anu';}
+function mthTeamNameKey(value){return String(value||'').trim().toLowerCase().replace(/[^a-z0-9]/g,'');}
+function mthTeamReportsTo(member){
+ const key=mthTeamNameKey(member.name);
+ return member.designation==='DVP'&&['sashinair','sashirnair','anil','anilkumar','anilnair','anilkumarnair'].includes(key)?mthTeamCurrentVP():(member.reportsTo||'');
+}
+function mthTeamInScope(member){return member.designation!=='VP'||mthTeamNameKey(member.name)===mthTeamNameKey(mthTeamCurrentVP());}
+function mthTeamMemberIsVisible(member){return mthTeamInScope(member)&&mthMemberIsVisible(member);}
+let mthTeamStatusMode='active';
+function mthSetTeamStatusMode(mode){
+ mthTeamStatusMode=['active','inactive','all'].includes(mode)?mode:'active';
+ const include=document.getElementById('mthShowInactiveMembers');if(include)include.checked=mthTeamStatusMode!=='active';
+ const select=document.getElementById('mthTeamStatusFilter');if(select)select.value=mthTeamStatusMode;
+ mthRefreshMemberVisibility();
+}
+function mthTeamStatusLabel(){return {active:'Active only',inactive:'Inactive only',all:'Active + inactive'}[mthTeamStatusMode];}
+function mthFilteredTeamMembers(){
+ let rows=membersData.map((member,originalIndex)=>({...member,originalIndex})).filter(mthTeamInScope).filter(member=>mthTeamStatusMode==='all'||(mthTeamStatusMode==='active'?mthMemberIsActive(member):!mthMemberIsActive(member)));
+ if(currentDesignationFilter!=='ALL')rows=rows.filter(member=>member.designation===currentDesignationFilter);
+ return rows.sort((a,b)=>{
+  let av=currentSortKey==='reportsTo'?mthTeamReportsTo(a):a[currentSortKey],bv=currentSortKey==='reportsTo'?mthTeamReportsTo(b):b[currentSortKey];
+  if(currentSortKey==='joiningDate'){av=String(av||'');bv=String(bv||'');}
+  return (currentSortAsc?1:-1)*String(av||'').localeCompare(String(bv||''),undefined,{numeric:true,sensitivity:'base'})||String(a.name||'').localeCompare(String(b.name||''));
+ });
+}
+function mthDirectoryScope(){return 'Role: '+(currentDesignationFilter==='ALL'?'All roles':currentDesignationFilter)+' | '+mthTeamStatusLabel()+' | Current VP: '+mthTeamCurrentVP()+' | Sort: '+currentSortKey+' '+(currentSortAsc?'ascending':'descending');}
+function mthRefreshTeamDirectoryCount(){
+ const count=document.getElementById('mthTeamDirectoryCount');if(count)count.textContent=mthFilteredTeamMembers().length+' members · '+mthDirectoryScope();
+}
+function mthPhoneDisplay(value){
+ const raw=String(value??'').trim(),digits=raw.replace(/\D/g,'');
+ const indian=n=>n.slice(0,4)+'-'+n.slice(4,7)+'-'+n.slice(7);
+ if(raw.startsWith('+'))return digits.length===12&&digits.startsWith('91')?'+91 '+indian(digits.slice(2)):raw;
+ if(digits.length===10)return indian(digits);
+ if(digits.length===12&&digits.startsWith('91'))return indian(digits.slice(2));
+ return raw;
+}
+function mthPhoneForStorage(value){
+ const raw=String(value||'').trim(),digits=raw.replace(/\D/g,'');
+ if(raw.startsWith('+'))return '+'+digits;
+ return digits.length===10?digits:raw;
+}
+function mthFormatPhoneInput(input){
+ const raw=input.value;if(raw.trim().startsWith('+')){if(raw.replace(/\D/g,'').length===12&&raw.replace(/\D/g,'').startsWith('91'))input.value=mthPhoneDisplay(raw);return;}
+ const digits=raw.replace(/\D/g,'');if(digits.length>10){input.value=mthPhoneDisplay(raw);return;}
+ const position=input.selectionStart,before=position==null?null:raw.slice(0,position).replace(/\D/g,'').length;
+ const next=digits.length>7?digits.slice(0,4)+'-'+digits.slice(4,7)+'-'+digits.slice(7):digits.length>4?digits.slice(0,4)+'-'+digits.slice(4):digits;
+ if(raw!==next){input.value=next;if(document.activeElement===input&&before!==null){let caret=0,n=0;while(caret<next.length&&n<before){if(/\d/.test(next[caret]))n++;caret++;}try{input.setSelectionRange(caret,caret);}catch{}}}
+}
+function mthPhoneHTML(value){return '<strong class="mth-phone-number">'+escapeHtml(mthPhoneDisplay(value)||'—')+'</strong>';}
+function mthInitPhoneDisplays(){
+ for(const id of ['phoneNumber','buyerPhone']){const input=document.getElementById(id);if(!input)continue;input.placeholder='9876-543-210';input.classList.add('mth-phone-number');if(input.value)input.value=mthPhoneDisplay(input.value);}
+}
+function mthDirectoryMemberDetails(member){
+ return {name:member.name||'',phone:mthPhoneDisplay(member.phone),designation:member.designation||'',reportsTo:mthTeamReportsTo(member),joiningDate:member.joiningDate||'',tenure:calculateTenure(member.joiningDate),assignedSchedule:member.assignedSchedule||'',payId:member.payId||'',status:mthMemberIsActive(member)?'Active':'Inactive',birthday:member.birthday||member.memberBirthday||member.dob||'',importantDate:member.importantDate||member.familyAnniversary||member.anniversary||'',address:[...new Set([member.footnote,member.address,member.notes].map(value=>String(value||'').trim()).filter(Boolean))].join('\n')};
+}
+function mthBuildMemberDirectoryHTML(){
+ const members=mthFilteredTeamMembers(),e=value=>escapeHtml(String(value||'—'));
+ const rows=members.map((member,index)=>{const m=mthDirectoryMemberDetails(member);return '<tr><td>'+String(index+1)+'</td><td><strong>'+e(m.name)+'</strong><p>Status: '+e(m.status)+'</p><p>Birthday: '+e(m.birthday)+'</p><p>Important date: '+e(m.importantDate)+'</p></td><td>'+mthPhoneHTML(member.phone)+'<p><strong>Address / notes</strong><br>'+e(m.address)+'</p></td><td><strong>'+e(m.designation)+'</strong><p>Reports to: '+e(m.reportsTo)+'</p><p>Pay ID: '+e(m.payId)+'</p></td><td>Joined: '+e(m.joiningDate)+'<p>Tenure: '+e(m.tenure)+'</p><p>Schedule: '+e(m.assignedSchedule)+'</p></td></tr>';}).join('');
+ return '<!doctype html><html><head><meta charset="utf-8"><style>body{font:12px Calibri,Arial,sans-serif;color:#112240;margin:0}h1{font-size:18px;margin:0 0 8px}.scope{margin:0 0 12px;font-size:11px}table{width:100%;border-collapse:collapse;table-layout:fixed}th,td{border:1px solid #bac8d8;padding:8px;vertical-align:top;text-align:left;overflow-wrap:anywhere;font-size:12px}th{background:#eaf0f7;font-weight:700}td p{margin:6px 0 0;line-height:1.35;white-space:pre-line}tr{break-inside:avoid}thead{display:table-header-group}.mth-phone-number{font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}</style></head><body><h1>Madras Trading House · Core Team Directory</h1><p class="scope">'+e(mthDirectoryScope())+' · '+members.length+' members</p><table><colgroup><col style="width:5%"><col style="width:22%"><col style="width:27%"><col style="width:21%"><col style="width:25%"></colgroup><thead><tr><th>Sl.</th><th>Member / status / dates</th><th>Phone / address / notes</th><th>Designation / upline / pay ID</th><th>Joined / tenure / schedule</th></tr></thead><tbody>'+rows+'</tbody></table></body></html>';
+}
+function mthPdfMemberDirectory(){
+ if(!mthFilteredTeamMembers().length)return alert('No members match the selected role and status.');
+ return mthPdfFromHTML(mthBuildMemberDirectoryHTML(),{title:'Core Team Directory',filter:mthDirectoryScope(),landscape:true});
+}
+function mthExportMemberDirectoryExcel(){
+ const rows=mthFilteredTeamMembers().map(member=>{const m=mthDirectoryMemberDetails(member);return [m.name,m.phone,m.designation,m.reportsTo,m.status,m.joiningDate,m.tenure,m.assignedSchedule,m.payId,m.birthday,m.importantDate,m.address];});
+ return mthDownloadWorkbook('Core_Team_Directory',['Name','Phone','Designation','Reports To / Upline','Status','Date Joined','Tenure','Assigned Schedule','Pay ID','Birthday','Important Date','Address / Notes'],rows,1);
+}
+
+// Small standards-based XLSX writer: text phone cells retain formatting and bold type.
+function mthWorkbookBytes(headers,rows,phoneColumn){
+ const xml=value=>String(value??'').replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g,'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+ const column=index=>{let label='';for(let n=index+1;n;n=Math.floor((n-1)/26))label=String.fromCharCode(65+(n-1)%26)+label;return label;};
+ const sheetRows=[headers,...rows].map((row,index)=>'<row r="'+(index+1)+'">'+row.map((value,col)=>'<c r="'+column(col)+(index+1)+'" s="'+(index===0?1:col===phoneColumn?2:3)+'" t="inlineStr"><is><t xml:space="preserve">'+xml(value)+'</t></is></c>').join('')+'</row>').join('');
+ const files={
+  '[Content_Types].xml':'<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>',
+  '_rels/.rels':'<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>',
+  'xl/workbook.xml':'<?xml version="1.0"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Members" sheetId="1" r:id="rId1"/></sheets></workbook>',
+  'xl/_rels/workbook.xml.rels':'<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>',
+  'xl/styles.xml':'<?xml version="1.0"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="4"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1" applyAlignment="1"><alignment vertical="top" wrapText="1"/></xf><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1" applyAlignment="1"><alignment vertical="top"/></xf><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0" applyAlignment="1"><alignment vertical="top" wrapText="1"/></xf></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>',
+  'xl/worksheets/sheet1.xml':'<?xml version="1.0"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><cols>'+headers.map((h,i)=>'<col min="'+(i+1)+'" max="'+(i+1)+'" width="'+(i===phoneColumn?20:/Address|Notes|Schedule/i.test(h)?48:24)+'" customWidth="1"/>').join('')+'</cols><sheetData>'+sheetRows+'</sheetData><autoFilter ref="A1:'+column(headers.length-1)+(rows.length+1)+'"/></worksheet>'
+ };
+ const encoder=new TextEncoder(),blocks=[],central=[];let offset=0;
+ const crc=bytes=>{let n=0xffffffff;for(const byte of bytes){n^=byte;for(let bit=0;bit<8;bit++)n=(n>>>1)^((n&1)?0xedb88320:0);}return(n^0xffffffff)>>>0;};
+ const bytes=n=>new Uint8Array(n),view=a=>new DataView(a.buffer),append=(...parts)=>{let length=parts.reduce((sum,p)=>sum+p.length,0),out=bytes(length),i=0;for(const p of parts){out.set(p,i);i+=p.length;}return out;};
+ for(const [name,text] of Object.entries(files)){
+  const filename=encoder.encode(name),content=encoder.encode(text),checksum=crc(content),local=bytes(30),lv=view(local);lv.setUint32(0,0x04034b50,true);lv.setUint16(4,20,true);lv.setUint16(12,33,true);lv.setUint32(14,checksum,true);lv.setUint32(18,content.length,true);lv.setUint32(22,content.length,true);lv.setUint16(26,filename.length,true);blocks.push(append(local,filename,content));
+  const entry=bytes(46),ev=view(entry);ev.setUint32(0,0x02014b50,true);ev.setUint16(4,20,true);ev.setUint16(6,20,true);ev.setUint16(14,33,true);ev.setUint32(16,checksum,true);ev.setUint32(20,content.length,true);ev.setUint32(24,content.length,true);ev.setUint16(28,filename.length,true);ev.setUint32(42,offset,true);central.push(append(entry,filename));offset+=local.length+filename.length+content.length;
+ }
+ const directory=append(...central),end=bytes(22),e=view(end);e.setUint32(0,0x06054b50,true);e.setUint16(8,central.length,true);e.setUint16(10,central.length,true);e.setUint32(12,directory.length,true);e.setUint32(16,offset,true);return append(...blocks,directory,end);
+}
+function mthDownloadWorkbook(title,headers,rows,phoneColumn){
+ if(!rows.length)return alert('No members match the selected filters.');
+ const blob=new Blob([mthWorkbookBytes(headers,rows,phoneColumn)],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+ const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=mthPdfName(title).replace(/\.pdf$/,'.xlsx');a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mthInitPhoneDisplays);else mthInitPhoneDisplays();
+</script>
 </body>
 </html>
