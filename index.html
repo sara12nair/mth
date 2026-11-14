@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Madras Trading House | Plot Sales Monitor & Team · Release 2611_12_2244 IST</title>
+    <title>Madras Trading House | Plot Sales Monitor & Team · Release 2611_14_2035 IST</title>
 
     <!-- PWA manifest + theme color: required for Chrome to offer "Install app" -->
     <link rel="manifest" href="./manifest.json">
@@ -1131,11 +1131,11 @@
 
 <div class="container">
 
-    <div class="app-brand-strip no-print" title="Release 2611_12_2244 IST">
+    <div class="app-brand-strip no-print" title="Release 2611_14_2035 IST">
         <img src="./icon-192.png" alt="Madras Trading House logo">
         <div class="app-brand-copy">
-            <strong>Madras Trading House</strong><!-- Release 2611_12_2244 IST; preserve approved header layout -->
-            <span>Plot Sales Monitor &amp; Team · Release 2611_12_2244 IST</span>
+            <strong>Madras Trading House</strong><!-- Release 2611_14_2035 IST; preserve approved header layout -->
+            <span>Plot Sales Monitor &amp; Team · Release 2611_14_2035 IST</span>
         </div>
     </div>
 
@@ -1146,9 +1146,11 @@
     </div>
 
     <!-- ========================================== -->
-    <label class="no-print" style="display:block;text-align:right;font-size:12px;margin:0 2px 10px;cursor:pointer">
+    <div class="no-print" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+    <button type="button" class="btn btn-outline" onclick="mthOpenSaleDirectory()">👥 VP / DVP Directory</button>
+    <label style="display:block;text-align:right;font-size:12px;margin:0 2px;cursor:pointer">
         <input type="checkbox" id="mthShowInactiveMembers" onchange="mthRefreshMemberVisibility()"> Show inactive members
-    </label>
+    </label></div>
     <!-- VIEW 1: PLOT TRACKER & BOOKING ENGINE      -->
     <!-- ========================================== -->
     <div id="viewPlotTracker" class="app-view-container active">
@@ -1210,7 +1212,7 @@
                         <option value="SOUTH">S — South</option><option value="SOUTH WEST">SW — South West</option>
                         <option value="WEST">W — West</option><option value="NORTH WEST">NW — North West</option>
                     </select></div>
-                    <div class="form-group"><label for="mthGroupingSelect">Group by</label><select id="mthGroupingSelect" onchange="updateVacantReport()"><option value="area" selected>Area</option><option value="facing">FACE</option><option value="plot">Plot number</option></select></div>
+                    <div class="form-group"><label for="mthGroupingSelect">Group by</label><select id="mthGroupingSelect" onchange="updateVacantReport()"><option value="area">Area</option><option value="facing">FACE</option><option value="plot" selected>Plot number</option></select></div>
                     <button type="button" id="mthAreaPrev" class="btn btn-outline" onclick="mthStepArea(-1)" title="Previous available plot size" aria-label="Previous available plot size">◀</button>
                     <div class="form-group"><label for="vacantAreaFrom">From (SFT)</label><input id="vacantAreaFrom" type="number" min="0" step="1" placeholder="e.g. 600" style="width:100px" oninput="mthAreaFromChanged()"></div>
                     <div class="form-group"><label for="vacantAreaTo">To (SFT)</label><input id="vacantAreaTo" type="number" min="0" step="1" placeholder="e.g. 700" style="width:100px" oninput="mthAreaToChanged()"></div>
@@ -1220,10 +1222,14 @@
                     <span id="vacantAreaMatches" style="font-weight:600;font-size:.75rem"></span>
                 </div>
                 <div class="toolbar no-print" style="margin:6px 0;align-items:end">
-                    <div class="form-group" style="flex:1;min-width:170px"><label for="mthPlotSearch">Find plot · current project · all statuses</label><input id="mthPlotSearch" type="search" placeholder="Type plot number, e.g. 6 or 129/130" oninput="mthRenderPlotLookup()" onkeydown="if(event.key==='Escape'){this.value='';mthRenderPlotLookup();}"></div>
+                    <div class="form-group" style="flex:1;min-width:170px"><label for="mthPlotSearch">Find plot · current project · all statuses</label><input id="mthPlotSearch" type="search" placeholder="Plot numbers, e.g. 6, 16, 129/130" oninput="mthRenderPlotLookup()" onkeydown="if(event.key==='Escape'){this.value='';mthRenderPlotLookup();}"></div>
                     <button type="button" class="btn btn-outline" onclick="document.getElementById('mthPlotSearch').value='';mthRenderPlotLookup();document.getElementById('mthPlotSearch').focus()">Clear search</button>
                 </div>
                 <div id="mthPlotLookupResults" class="no-print" aria-live="polite"></div>
+                <div id="mthEstimateSelectionBar" class="mth-estimate-selection no-print" aria-label="Selected plots for estimate">
+                  <div id="mthEstimateSelectedPlots" aria-live="polite"></div>
+                  <div class="mth-estimate-actions"><button type="button" class="btn" id="mthOpenSelectedEstimate" onclick="mthOpenSelectedEstimate()" disabled>Estimate / Cost Sheet (0)</button><button type="button" class="btn btn-outline" id="mthClearSelectedEstimate" onclick="mthClearEstimateSelection()" disabled>Clear selected</button></div>
+                </div>
                 <!-- Collapsible Wrapper for Table & Toolbar -->
                 <div id="inventoryCollapsibleContent">
                     <div class="toolbar">
@@ -1372,6 +1378,7 @@
         <div id="tabBooking" class="tab-content">
             <div class="card screen-card-only no-print">
                 <h2>🏢 Customer Booking & Cost Sheet Generator</h2>
+                <div class="mth-estimate-selection no-print"><div id="mthBookingSelectedPlots" aria-live="polite"></div><button type="button" class="btn btn-outline" onclick="switchTrackerTab('inventory');document.getElementById('mthPlotSearch').focus()">Search / tick more plots</button></div>
                 
                 <div class="radio-group-container no-print" style="margin-top: 6px;">
                     <label style="font-size: 0.68rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted);">Document Mode:</label>
@@ -1417,7 +1424,7 @@
 
                 <div class="form-group" style="margin-bottom: 8px;">
                     <label>Select Plots for Booking (Hold Ctrl / Cmd to Select Multiple):</label>
-                    <select id="plotMultiSelect" class="plot-selector-box" multiple onchange="renderReport()"></select>
+                    <select id="plotMultiSelect" class="plot-selector-box" multiple onchange="mthBookingPlotSelectionChanged()"></select>
                 </div>
 
                 <div style="display: flex; gap: 6px; margin-bottom: 6px; flex-wrap: wrap; align-items: center;">
@@ -1741,7 +1748,7 @@
                 </div>
                 <div class="team-form-group">
                   <label>Meeting Date *</label>
-                  <input type="date" id="meetDate" required>
+                  <input type="date" id="meetDate" required onfocus="mthLimitMeetingDate()">
                 </div>
                 <div class="team-form-group">
                   <label>Attendance Status</label>
@@ -3538,22 +3545,78 @@ function applyReconciliation() {
     alert("Reconciliation completed successfully! Database updated.");
 }
 
-function populateMultiPlotSelect() {
-    const p = getActiveProject();
-    const select = document.getElementById("plotMultiSelect");
-    const selectedValues = Array.from(select.selectedOptions).map(o => o.value);
-    select.innerHTML = "";
-
-    if (p.plots) {
-        mthPlotEntries(p.plots).forEach(({ plot }) => {
-            if (String(plot.status || 'Vacant').trim().toLowerCase() !== 'vacant') return;
-            const opt = document.createElement("option");
-            opt.value = plot.plotNo;
-            opt.textContent = ` ${plot.plotNo} - ${plot.facing} - ${plot.area} Sft`;
-            if (selectedValues.includes(plot.plotNo)) opt.selected = true;
-            select.appendChild(opt);
-        });
+// One temporary selection shared by search checkboxes and the original cost-sheet list.
+let mthEstimateProject = null;
+let mthEstimateSelected = new Set();
+function mthEstimateAvailable(plot) {
+    return String(plot.status || 'Vacant').trim().toLowerCase() === 'vacant';
+}
+function mthReconcileEstimateSelection() {
+    const project = getActiveProject();
+    const projectKey = JSON.stringify([Number(appData.activeProjectIndex), project.id || project.name]);
+    if (mthEstimateProject !== projectKey) {
+        mthEstimateProject = projectKey;
+        mthEstimateSelected.clear();
     }
+    const available = new Set((project.plots || []).filter(mthEstimateAvailable).map(plot => String(plot.plotNo)));
+    for (const number of mthEstimateSelected) if (!available.has(number)) mthEstimateSelected.delete(number);
+    return project;
+}
+function mthRenderEstimateSelection() {
+    const project = mthReconcileEstimateSelection();
+    const plots = (project.plots || []).filter(plot => mthEstimateSelected.has(String(plot.plotNo)))
+        .sort((a, b) => mthComparePlotNumbers(a.plotNo, b.plotNo));
+    const area = plots.reduce((sum, plot) => sum + Number(plot.area || 0), 0);
+    for (const id of ['mthEstimateSelectedPlots', 'mthBookingSelectedPlots']) {
+        const holder = document.getElementById(id); if (!holder) continue;
+        holder.replaceChildren();
+        const label = document.createElement('strong');
+        label.textContent = plots.length ? `Selected: ${plots.length} plot${plots.length === 1 ? '' : 's'} · ${area.toLocaleString('en-IN')} SFT` : 'Search and tick vacant plots for Estimate / Cost Sheet';
+        holder.append(label);
+        for (const plot of plots) {
+            const button = document.createElement('button'); button.type = 'button'; button.className = 'mth-selected-plot';
+            button.textContent = String(plot.plotNo) + ' ×';
+            button.setAttribute('aria-label', 'Remove plot ' + plot.plotNo + ' from estimate');
+            button.onclick = () => mthSetEstimatePlot(String(plot.plotNo), false);
+            holder.append(button);
+        }
+    }
+    const open = document.getElementById('mthOpenSelectedEstimate');
+    if (open) { open.disabled = !plots.length; open.textContent = `Estimate / Cost Sheet (${plots.length})`; }
+    const clear = document.getElementById('mthClearSelectedEstimate'); if (clear) clear.disabled = !plots.length;
+}
+function populateMultiPlotSelect() {
+    const project = mthReconcileEstimateSelection();
+    const select = document.getElementById('plotMultiSelect'); if (!select) return;
+    select.replaceChildren();
+    mthPlotEntries(project.plots).forEach(({ plot }) => {
+        if (!mthEstimateAvailable(plot)) return;
+        const option = document.createElement('option'); option.value = String(plot.plotNo);
+        option.textContent = ` ${plot.plotNo} - ${plot.facing} - ${plot.area} Sft`;
+        option.selected = mthEstimateSelected.has(String(plot.plotNo)); select.append(option);
+    });
+    mthRenderEstimateSelection();
+}
+function mthSetEstimatePlot(number, checked) {
+    const project = mthReconcileEstimateSelection();
+    const plot = (project.plots || []).find(item => String(item.plotNo) === String(number));
+    if (checked && (!plot || !mthEstimateAvailable(plot))) { alert('This plot is not available for an estimate.'); return; }
+    if (checked) mthEstimateSelected.add(String(number)); else mthEstimateSelected.delete(String(number));
+    populateMultiPlotSelect(); renderReport(); mthRenderPlotLookup();
+}
+function mthBookingPlotSelectionChanged() {
+    mthReconcileEstimateSelection();
+    mthEstimateSelected = new Set(Array.from(document.getElementById('plotMultiSelect').selectedOptions).map(option => option.value));
+    mthReconcileEstimateSelection(); mthRenderEstimateSelection(); renderReport(); mthRenderPlotLookup();
+}
+function mthClearEstimateSelection() {
+    mthEstimateSelected.clear(); populateMultiPlotSelect(); renderReport(); mthRenderPlotLookup();
+}
+function mthOpenSelectedEstimate() {
+    populateMultiPlotSelect();
+    if (!mthEstimateSelected.size) return alert('Tick at least one vacant plot.');
+    switchTrackerTab('booking'); renderReport();
+    document.getElementById('tabBooking').scrollIntoView({block:'start', behavior:'smooth'});
 }
 
 // Manual loan is scoped to this buyer, bank and plot selection, never bank settings.
@@ -3612,6 +3675,7 @@ function mthBookingLoanAmounts(p, plots, bank, isSelfFund) {
 }
 
 function renderReport() {
+    populateMultiPlotSelect();
     const p = mthBookingProject();
     const activeBank = getActiveBank();
     const isSelfFund = (p.paymentMode === "self_fund" || p.paymentMode === "cash");
@@ -3656,7 +3720,7 @@ function renderReport() {
 
     const select = document.getElementById("plotMultiSelect");
     const selectedPlotNos = Array.from(select.selectedOptions).map(o => o.value);
-    const selectedPlots = (p.plots || []).filter(plot => selectedPlotNos.includes(plot.plotNo));
+    const selectedPlots = (p.plots || []).filter(plot => selectedPlotNos.includes(String(plot.plotNo)));
 
     const rptTbody = document.getElementById("rptPlotsTbody");
     rptTbody.innerHTML = "";
@@ -3838,16 +3902,19 @@ function mthOrderVacantPlots(plots) {
 }
 
 
+function mthPlotSearchTerms(query) {
+    return [...new Set(String(query || '').trim().toUpperCase().replace(/\s*([/\&+])\s*/g, '$1').split(/[,;\s]+/).filter(Boolean))];
+}
 function mthPlotMatchesQuery(plotNo, query) {
-    const normalize = value => String(value ?? '').trim().toUpperCase().replace(/\s+/g, '');
-    const number = normalize(plotNo), search = normalize(query);
-    return !!search && (number === search || number.split(/[\/,&+]+/).includes(search));
+    const number = String(plotNo ?? '').trim().toUpperCase().replace(/\s+/g, '');
+    return mthPlotSearchTerms(query).some(search => number === search || number.split(/[\/,&+]+/).includes(search));
 }
 function mthRenderPlotLookup() {
     const output = document.getElementById('mthPlotLookupResults');
     const query = document.getElementById('mthPlotSearch')?.value.trim();
     if (!output) return;
     output.replaceChildren();
+    populateMultiPlotSelect();
     if (!query) return;
     const project = getActiveProject();
     const matches = mthSortedPlotEntries(project.plots).filter(({plot}) => mthPlotMatchesQuery(plot.plotNo, query));
@@ -3866,13 +3933,15 @@ function mthRenderPlotLookup() {
         empty.append(warning, guidance);
         output.appendChild(empty); return;
     }
+    const missing = mthPlotSearchTerms(query).filter(term => !(project.plots || []).some(plot => mthPlotMatchesQuery(plot.plotNo, term)));
+    if (missing.length) { const message = document.createElement('p'); message.textContent = 'Not listed: ' + missing.join(', '); message.style.color = '#92400e'; output.append(message); }
     const wrapper = document.createElement('div');
     wrapper.className = 'table-responsive';
     const table = document.createElement('table');
     table.id = 'mthPlotLookupTable';
     table.style.minWidth = '1100px';
-    const labels = ['SL', 'PLOT NO', 'FACE', 'AREA (SFT)', 'CORNER', 'SELLING RATE/SFT', 'PLOT COST (₹)', 'REGN + DOC (₹)', 'TOTAL EST. COST (₹)', 'Notes'];
-    const alignment = ['center', 'left', 'center', 'right', 'center', 'right', 'right', 'right', 'right', 'left'];
+    const labels = ['SELECT', 'SL', 'PLOT NO', 'FACE', 'AREA (SFT)', 'CORNER', 'SELLING RATE/SFT', 'PLOT COST (₹)', 'REGN + DOC (₹)', 'TOTAL EST. COST (₹)', 'Notes'];
+    const alignment = ['center', 'center', 'left', 'center', 'right', 'center', 'right', 'right', 'right', 'right', 'left'];
     const thead = table.createTHead();
     const header = thead.insertRow();
     labels.forEach((label, i) => {
@@ -3885,8 +3954,14 @@ function mthRenderPlotLookup() {
     matches.forEach(({plot, idx}, index) => {
         const fin = calculatePlotFinancials(project, plot);
         const status = String(plot.status || 'Vacant').trim();
-        const unavailable = ['booked', 'sold'].includes(status.toLowerCase());
+        const unavailable = !mthEstimateAvailable(plot);
         const row = tbody.insertRow();
+        const selection = row.insertCell(); selection.style.textAlign = 'center';
+        const checkbox = document.createElement('input'); checkbox.type = 'checkbox';
+        checkbox.checked = mthEstimateSelected.has(String(plot.plotNo)); checkbox.disabled = unavailable;
+        checkbox.setAttribute('aria-label', 'Select plot ' + plot.plotNo + (unavailable ? ' — not available' : ' for estimate'));
+        checkbox.onchange = () => mthSetEstimatePlot(String(plot.plotNo), checkbox.checked);
+        selection.append(checkbox);
         const values = [index + 1, plot.plotNo, plot.facing || '—',
             Number(plot.area || 0).toLocaleString('en-IN'), plot.corner ? 'YES' : 'NO',
             formatCurrency(fin.effPrice), formatCurrency(fin.baseCost + fin.cornerCost),
@@ -3894,11 +3969,11 @@ function mthRenderPlotLookup() {
         values.forEach((value, i) => {
             const cell = row.insertCell();
             cell.textContent = value;
-            cell.style.textAlign = alignment[i];
+            cell.style.textAlign = alignment[i + 1];
             cell.style.verticalAlign = 'top';
             if (i === 1 || i === 8) cell.style.fontWeight = '600';
         });
-        const plotCell = row.cells[1];
+        const plotCell = row.cells[2];
         if (unavailable) plotCell.style.cssText += ';color:#64748b;background:#e2e8f0';
         const badge = document.createElement('div');
         badge.textContent = unavailable ? `Not available — ${status}` : status;
@@ -3921,7 +3996,7 @@ function mthRenderPlotLookup() {
         const history = document.createElement('div');
         history.innerHTML = renderPlotStatusHistory(plot);
         extra.append(summary, team, details, history);
-        row.cells[9].appendChild(extra);
+        row.cells[10].appendChild(extra);
     });
     wrapper.appendChild(table);
     output.appendChild(wrapper);
@@ -5051,6 +5126,14 @@ function renderMeetingAttendanceLogs() {
   tbody.innerHTML = rows.length ? rows.map(r => `<tr><td>${escapeHtml(r.date)}</td><td>${escapeHtml(r.meeting)}</td><td>${escapeHtml(r.memberName)}</td><td>${escapeHtml(r.role || 'Attended')}</td></tr>`).join('') : '<tr><td colspan="4">No meeting attendance recorded.</td></tr>';
 }
 
+function mthMeetingToday() {
+  const parts = new Intl.DateTimeFormat('en-GB', {timeZone:'Asia/Kolkata',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
+  const value = key => parts.find(part => part.type === key).value;
+  return value('year') + '-' + value('month') + '-' + value('day');
+}
+function mthLimitMeetingDate() {
+  const field = document.getElementById('meetDate'); if (field) field.max = mthMeetingToday();
+}
 function saveMeetingAttendance() {
   const rawMeetingVal = document.getElementById('meetName').value;
   const customTitle = document.getElementById('customMeetTitle').value.trim();
@@ -5060,6 +5143,8 @@ function saveMeetingAttendance() {
   const role = document.getElementById('meetRole').value;
 
   if (!meetingName || !dateStr || !memberName || (rawMeetingVal === 'CUSTOM' && !customTitle)) return alert("Fill required meeting fields.");
+  mthLimitMeetingDate();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr) || dateStr > mthMeetingToday()) return alert('Future meeting attendance cannot be recorded. Choose today or an earlier date.');
   const record = { date: dateStr, meeting: meetingName, memberName, role };
   const key = mthMeetingKey(record);
   const alreadyRecorded = meetingRecords.some(r => mthMeetingKey(r) === key);
@@ -5460,6 +5545,7 @@ function lockProjectBankSetup(returnToInventory) {
  <div id="mthSalePanel" role="dialog" aria-modal="true" aria-labelledby="mthSaleTitle">
   <h3 id="mthSaleTitle" style="margin:0">Plot Sale Details</h3>
   <div id="mthSaleSub" class="mth-sale-hint"></div>
+  <div id="mthSaleAttributionFields">
   <label for="mthSaleVP">VP</label><select id="mthSaleVP" onchange="mthSaleVPChanged()"></select>
   <div id="mthSaleDVPWrap"><label for="mthSaleDVP" id="mthSaleDVPLabel">DVP</label><select id="mthSaleDVP"></select></div>
 
@@ -5467,7 +5553,8 @@ function lockProjectBankSetup(returnToInventory) {
   <label for="mthSaleRegistrationDate">Registration date</label><input type="date" id="mthSaleRegistrationDate">
   <label for="mthSaleNotes">Booking / Sale Notes (optional)</label><textarea id="mthSaleNotes" rows="3" placeholder="E.g. Booking handled by a BDM directly under the VP" style="resize:vertical;min-height:70px"></textarea>
   <p class="mth-sale-hint">Dates may be corrected. A cancelled booking retains its history.</p>
-  <details><summary style="cursor:pointer">Manage team directory (add / edit / deactivate)</summary>
+  </div>
+  <details id="mthSaleDirectoryDetails"><summary style="cursor:pointer">Manage team directory (add / edit / deactivate)</summary>
    <div id="mthSaleDirectory" style="margin-top:8px"></div>
    <label for="mthSaleMemberName">Full name</label><input id="mthSaleMemberName" placeholder="New VP or DVP name">
    <label for="mthSaleMemberCode">Short code (editable)</label><input id="mthSaleMemberCode" placeholder="e.g. JP" maxlength="12">
@@ -5477,7 +5564,7 @@ function lockProjectBankSetup(returnToInventory) {
   </details>
   <div class="mth-sale-actions">
    <button type="button" onclick="mthCloseSaleDetails()">Cancel</button>
-   <button type="button" onclick="mthSaveSaleDetails()" style="background:#166534;color:white;border:0">Save Sale Details</button>
+   <button type="button" id="mthSaveSaleDetailsButton" onclick="mthSaveSaleDetails()" style="background:#166534;color:white;border:0">Save Sale Details</button>
   </div>
  </div>
 </div>
@@ -5527,15 +5614,31 @@ window.mthSaleMemberRoleChanged=function(){
 };
 window.mthSaleVPChanged=function(){
  const selected=byId('mthSaleVP').value;
+ if(selected)byId('mthSaleMemberVP').value=selected;
  const wrap=byId('mthSaleDVPWrap');
  wrap.style.display=selected?'block':'none';
  const vp=directory().find(x=>x.id===selected);
- byId('mthSaleDVPLabel').textContent='DVP under '+(vp?.name||'selected VP')+(selected==='vp-anu'?'':' (optional)');
+ byId('mthSaleDVPLabel').textContent='DVP under '+(vp?.name||'selected VP')+' (optional)';
  const previous=byId('mthSaleDVP').value;
- byId('mthSaleDVP').innerHTML='<option value="">'+(selected==='vp-anu'?'Select DVP':'VP only / DVP unknown')+'</option>'+directory().filter(x=>x.role==='DVP'&&x.parentVPId===selected&&(mthMemberIsVisible(x)||x.id===editProject?.plots?.[editIdx]?.mthSaleDetails?.dvpId)).map(x=>option(x,previous)).join('');
+ byId('mthSaleDVP').innerHTML='<option value="">'+'VP only / DVP not assigned'+'</option>'+directory().filter(x=>x.role==='DVP'&&x.parentVPId===selected&&(mthMemberIsVisible(x)||x.id===editProject?.plots?.[editIdx]?.mthSaleDetails?.dvpId)).map(x=>option(x,previous)).join('');
  byId('mthSaleDVP').insertAdjacentHTML('beforeend','<option value="__direct_vp__"'+(previous==='__direct_vp__'?' selected':'')+'>Direct to VP (No DVP)</option>');
 };
+window.mthOpenSaleDirectory=function(){
+ editIdx=null;editProject=null;
+ byId('mthSaleTitle').textContent='VP / DVP Directory';
+ byId('mthSaleSub').textContent='Add DVPs under any VP. Inactive members keep their historical attribution.';
+ byId('mthSaleAttributionFields').hidden=true;
+ byId('mthSaveSaleDetailsButton').hidden=true;
+ byId('mthSaleDirectoryDetails').open=true;
+ byId('mthSaleVP').value='';byId('mthSaleMemberVP').value='';
+ byId('mthSaleMemberRole').value='DVP';
+ byId('mthSaleMemberName').value='';byId('mthSaleMemberCode').value='';
+ renderMembers();byId('mthSaleOverlay').style.display='flex';
+ byId('mthSaleMemberName').focus();
+};
 window.mthOpenSaleDetails=function(idx){
+ byId('mthSaleAttributionFields').hidden=false;
+ byId('mthSaveSaleDetailsButton').hidden=false;
  const p=getActiveProject(),plot=p?.plots?.[idx];if(!plot)return;
  editIdx=idx;editProject=p;
  byId('mthSaleTitle').textContent='Sale Details — Plot '+plot.plotNo;
@@ -5572,7 +5675,6 @@ window.mthSaveSaleDetails=function(){
  const previous=plot.mthSaleDetails||{};
 
  if(dvpId&&!directory().some(x=>x.id===dvpId&&x.role==='DVP'&&x.parentVPId===vpId)){alert('Select a DVP belonging to the selected VP.');return;}
- if(vpId==='vp-anu'&&!dvpId&&!direct){alert('Select one DVP for Anu’s division.');return;}
  const bookingDate=byId('mthSaleBookingDate').value,registrationDate=byId('mthSaleRegistrationDate').value;
  if(registrationDate&&bookingDate&&registrationDate<bookingDate){alert('Registration date cannot be earlier than booking date.');return;}
  const notes=byId('mthSaleNotes').value.trim();
@@ -5600,7 +5702,7 @@ window.mthAddSaleMember=function(){
  if(!name||!code){alert('Enter name and short code.');return;}
  if(directory().some(x=>x.code.toUpperCase()===code)){alert('Short code already in use. Choose another.');return;}
  const parentVPId=role==='DVP'?byId('mthSaleMemberVP').value:null;
- if(role==='DVP'&&!directory().some(x=>x.id===parentVPId&&x.role==='VP'&&x.active)){alert('Select the parent VP for this member.');return;}
+ if(role==='DVP'&&!directory().some(x=>x.id===parentVPId&&x.role==='VP'&&mthMemberIsActive(x))){alert('Select the parent VP for this member.');return;}
  directory().push({id:'member-'+Date.now()+'-'+Math.random().toString(36).slice(2,6),name,code,role,parentVPId,active:true});
  byId('mthSaleMemberName').value='';byId('mthSaleMemberCode').value='';autoSaveState();renderMembers();
 };
@@ -6527,5 +6629,19 @@ function mthToggleSummaryPreview() {
   button.setAttribute('aria-expanded', String(!collapsed));
 }
 </script>
+
+<style id="mth-estimate-search-selection">
+.mth-estimate-selection{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;background:#eef4ff;border:1px solid #cbd8ee;border-radius:6px;padding:9px;margin:8px 0;font-size:12px}
+.mth-estimate-selection>div:first-child{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.mth-estimate-actions{display:flex;gap:6px;flex-wrap:wrap}
+.mth-selected-plot{background:white;color:#1e3a8a;border:1px solid #a9bcdb;border-radius:16px;padding:5px 9px;cursor:pointer;font:inherit}
+#mthPlotLookupTable input[type=checkbox]{width:20px;height:20px;cursor:pointer;accent-color:#1e3a8a}
+#mthPlotLookupTable input:disabled{cursor:default}
+#mthSaleAttributionFields[hidden],#mthSaveSaleDetailsButton[hidden]{display:none!important}
+@media(max-width:600px){.mth-estimate-actions{width:100%}.mth-estimate-actions>.btn:first-child{flex:1}}
+@media print{.mth-estimate-selection{display:none!important}}
+</style>
+<script>if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mthLimitMeetingDate);else mthLimitMeetingDate();</script>
+
 </body>
 </html>
