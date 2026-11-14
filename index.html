@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Madras Trading House | Plot Sales Monitor & Team · Release 2611_14_2337 IST</title>
+    <title>Madras Trading House | Plot Sales Monitor & Team · Release 2611_15_0013 IST</title>
 
     <!-- PWA manifest + theme color: required for Chrome to offer "Install app" -->
     <link rel="manifest" href="./manifest.json">
@@ -1131,11 +1131,11 @@
 
 <div class="container">
 
-    <div class="app-brand-strip no-print" title="Release 2611_14_2337 IST">
+    <div class="app-brand-strip no-print" title="Release 2611_15_0013 IST">
         <img src="./icon-192.png" alt="Madras Trading House logo">
         <div class="app-brand-copy">
-            <strong>Madras Trading House</strong><!-- Release 2611_14_2337 IST; preserve approved header layout -->
-            <span>Plot Sales Monitor &amp; Team · Release 2611_14_2337 IST</span>
+            <strong>Madras Trading House</strong><!-- Release 2611_15_0013 IST; preserve approved header layout -->
+            <span>Plot Sales Monitor &amp; Team · Release 2611_15_0013 IST</span>
         </div>
     </div>
 
@@ -1665,20 +1665,20 @@
 
             <div style="display: flex; gap: 12px; align-items: center; background-color: #faf9f6; padding: 12px; border-radius: 6px; border: 1px solid #e2e0d8; margin-bottom: 16px; flex-wrap: wrap;">
               <label>Start Date:</label>
-              <input type="date" id="teamReportStartDate" style="padding:6px; border:1px solid #e2e0d8; border-radius:4px;">
+              <input type="date" id="teamReportStartDate" style="padding:6px; border:1px solid #e2e0d8; border-radius:4px;" onchange="mthValidateTeamReportDates(true)">
               <label>End Date:</label>
-              <input type="date" id="teamReportEndDate" style="padding:6px; border:1px solid #e2e0d8; border-radius:4px;">
+              <input type="date" id="teamReportEndDate" style="padding:6px; border:1px solid #e2e0d8; border-radius:4px;" onchange="mthValidateTeamReportDates(true)">
               
 
 
               <button type="button" class="team-btn-secondary" onclick="generateAndPrintReport()">🔄 Update View</button>
               <button type="button" class="team-btn" style="background-color: #1b5e20;" onclick="exportReportToExcel()">📊 Export to Excel (.xlsx)</button>
-              <button type="button" class="team-btn" onclick="window.print()">🖨️ Print / Save as PDF</button><button type="button" class="btn btn-outline" onclick="mthPdfTeam()">Open / Share PDF</button>
+              <button type="button" class="team-btn" onclick="if(mthValidateTeamReportDates(true)){generateAndPrintReport();window.print()}">🖨️ Print / Save as PDF</button><button type="button" class="btn btn-outline" onclick="mthPdfTeam()">Open / Share PDF</button>
 			                
               <!-- INTERNAL PAYOUT LEDGER TRIGGER BUTTON -->
               <button type="button" class="btn btn-outline" style="background-color: #722f23; color: white;" onclick="openInternalCommissionModal()">
                   🔒 View Internal Payout Ledger</button>
-            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;width:100%;margin-top:8px"><button type="button" class="team-btn-secondary" onclick="mthSetTeamReportPeriod('today')">Today</button><button type="button" class="team-btn-secondary" onclick="mthSetTeamReportPeriod('week')">This week</button><button type="button" class="team-btn-secondary" onclick="mthSetTeamReportPeriod('last7')">Last 7 days</button><button type="button" class="team-btn-secondary" onclick="mthSetTeamReportPeriod('month')">This month</button></div><p id="mthTeamReportWeekNote" style="font-size:12px">Weeks run Monday–Sunday. Actual reports end no later than today.</p><p id="mthTeamReportDateError" role="alert" style="color:#a11"></p></div>
 
             <div id="printableReportArea">
               <div style="border-bottom: 2px solid #8b3a2b; padding-bottom: 6px; margin-bottom: 12px;">
@@ -1811,7 +1811,7 @@
           <div class="team-card">
             <h3>Member Profile</h3>
             <form id="memberForm" onsubmit="event.preventDefault(); saveMemberRecord();">
-              <input type="hidden" id="memberEditIndex" value="">
+              <div id="mthMemberDuplicateHint" hidden role="alert" style="padding:8px;background:#fff2d8;color:#542e00"></div><input type="hidden" id="memberEditIndex" value="">
               <div class="team-form-grid">
                 <div class="team-form-group">
                   <label>Full Name *</label>
@@ -1890,7 +1890,7 @@
 
           <!-- GROUPED DIRECTORY BY DESIGNATION TABS -->
           <div class="team-card">
-            <h3>Core Team Directory (Grouped by Designation)</h3>
+            <details id="mthMemberDuplicateReview" hidden style="padding:10px;background:#fff4df;margin-bottom:12px"></details><h3>Core Team Directory (Grouped by Designation)</h3>
             <div class="mth-team-directory-tools"><label for="mthTeamStatusFilter">Members <select id="mthTeamStatusFilter" onchange="mthSetTeamStatusMode(this.value)"><option value="active" selected>Active only</option><option value="inactive">Inactive only</option><option value="all">Active + inactive</option></select></label><button type="button" class="team-btn" onclick="mthPdfMemberDirectory()">📄 Member List PDF</button><button type="button" class="team-btn-secondary" onclick="mthExportMemberDirectoryExcel()">Export Excel</button></div><p id="mthTeamDirectoryCount" class="mth-team-filter-summary" aria-live="polite"></p>
             <div class="team-sub-tabs">
               <button class="team-sub-tab-btn active" onclick="filterDirectoryByDesignation('ALL', this)">ALL</button>
@@ -4821,37 +4821,7 @@ function handleFileUpload(event) {
   reader.readAsArrayBuffer(file);
 }
 
-function processImportedMembers(importedRows) {
-  let addedCount = 0, updatedCount = 0;
-  importedRows.forEach(row => {
-    const getVal = (...keys) => {
-      for (let k of keys) {
-        const foundKey = Object.keys(row).find(rk => rk.trim().toLowerCase() === k.toLowerCase());
-        if (foundKey && row[foundKey] !== undefined && row[foundKey] !== null && String(row[foundKey]).trim() !== '') return String(row[foundKey]).trim();
-      }
-      return '';
-    };
-    const name = getVal('name', 'member name', 'member');
-    if (!name) return;
-    const desig = (getVal('designation', 'role') || 'SM').toUpperCase();
-    const reportsToName = getVal('reportsto', 'reports to', 'upline') || 'Sashi Nair';
-    const memberObj = {
-      name, phone: getVal('phone'), designation: desig, reportsTo: reportsToName,
-      joiningDate: getVal('joiningdate', 'date joined') || new Date().toISOString().split('T')[0],
-      assignedSchedule: getVal('assignedschedule', 'schedule') || '-- No meeting scheduled --',
-      footnote: getVal('footnote', 'notes') || '', payId: generatePayId(desig, reportsToName)
-    };
-    const existingIdx = membersData.findIndex(m => m.name.toLowerCase() === name.toLowerCase());
-    const activeValue = getVal('active', 'membership', 'membership status', 'status');
-    if (activeValue) memberObj.active = !['false', '0', 'no', 'inactive', 'deactivated'].includes(activeValue.toLowerCase());
-    else if (existingIdx > -1 && membersData[existingIdx].active !== undefined) memberObj.active = membersData[existingIdx].active;
-    if (existingIdx > -1) { membersData[existingIdx] = { ...membersData[existingIdx], ...memberObj }; updatedCount++; }
-    else { membersData.push(memberObj); addedCount++; }
-  });
-  autoSaveTeamState();
-  renderMemberTable();
-  alert(`Import Complete!\n• ${addedCount} added\n• ${updatedCount} updated`);
-}
+function processImportedMembers(importedRows){return mthImportMembersSafely(importedRows);}
 
 function filterDirectoryByDesignation(desig, btn) {
   currentDesignationFilter = desig;
@@ -4894,6 +4864,7 @@ function renderMemberDropdowns() {
 }
 
 function renderMemberTable() {
+ mthRenderMemberDuplicateReview();
   const tbody = document.getElementById('memberDirectoryBody');
   if (!tbody) return;
   tbody.innerHTML = '';
@@ -4929,8 +4900,9 @@ function populateMonthYearSelectors() {
     if (sel) sel.innerHTML = [currentYear - 1, currentYear, currentYear + 1].map(y => `<option value="${y}" ${y === currentYear ? 'selected' : ''}>${y}</option>`).join('');
   });
 
-  if (document.getElementById('teamReportStartDate')) document.getElementById('teamReportStartDate').value = new Date(currentYear, currentMonth, 1).toISOString().split('T')[0];
-  if (document.getElementById('teamReportEndDate')) document.getElementById('teamReportEndDate').value = new Date(currentYear, currentMonth + 1, 0).toISOString().split('T')[0];
+  if (document.getElementById('teamReportStartDate')) document.getElementById('teamReportStartDate').value = mthMeetingToday().slice(0,8)+'01';
+  if (document.getElementById('teamReportEndDate')) document.getElementById('teamReportEndDate').value = mthMeetingToday();
+  mthLimitTeamReportDates();
 }
 
 function editMember(index) {
@@ -4948,15 +4920,18 @@ function editMember(index) {
   document.getElementById('footnote').value = m.footnote || '';
   if (document.getElementById('payIdDisplay')) document.getElementById('payIdDisplay').value = m.payId;
   window.scrollTo({ top: 0, behavior: 'smooth' });
+  mthShowMemberDuplicateHint();
 }
 
 function resetMemberForm() {
   document.getElementById('memberEditIndex').value = '';
   document.getElementById('memberForm').reset();
+  const duplicateHint=document.getElementById('mthMemberDuplicateHint');if(duplicateHint){duplicateHint.hidden=true;duplicateHint.replaceChildren();}
   if (document.getElementById('payIdDisplay')) document.getElementById('payIdDisplay').value = '';
 }
 
 function saveMemberRecord() {
+  if(!mthCheckMemberNumberBeforeSave(document.getElementById('memberName').value.trim(),document.getElementById('phoneNumber').value,document.getElementById('memberEditIndex').value))return;
   const editIndex = document.getElementById('memberEditIndex').value;
   const name = document.getElementById('memberName').value.trim();
   const designation = document.getElementById('memberDesignation').value;
@@ -5216,6 +5191,7 @@ function renderMeetingMatrix() {
 }
 
 function generateAndPrintReport() {
+  if(!mthValidateTeamReportDates())return;
   const startDate = document.getElementById('teamReportStartDate').value, endDate = document.getElementById('teamReportEndDate').value;
   const tbody = document.getElementById('reportTableBody');
   if (!tbody) return;
@@ -5235,6 +5211,7 @@ function generateAndPrintReport() {
 }
 
 function exportReportToExcel() {
+  if(!mthValidateTeamReportDates(true))return;
   generateAndPrintReport();
   const table=document.getElementById('summaryReportTable');
   const headers=Array.from(table.querySelectorAll('thead th')).map(cell=>cell.textContent.trim());
@@ -6612,7 +6589,7 @@ function mthPdfDownloadFile(){
 function mthPdfCurrentProjectLabel(){return getActiveProject()?.name||'Project';}
 function mthPdfVacant(){updateReportTimestamp();updateVacantReport();const face=mthGetFaceFilter();return mthPdfFromElement(document.getElementById('printableVacantReport'),{title:mthPdfCurrentProjectLabel()+' - Vacant Plots',filter:(face?face+' facing':'All facings')+' | '+(document.getElementById('mthVacantRangeHeading')?.textContent||'All areas')});}
 function mthPdfCostSheet(){updateReportTimestamp();renderReport();return mthPdfFromElement(document.getElementById('printableReport'),{title:mthPdfCurrentProjectLabel()+' - '+(document.getElementById('docTypeQuote')?.checked?'Estimate':'Booking'),filter:'Plots '+Array.from(document.getElementById('plotMultiSelect').selectedOptions).map(o=>o.value).join(', ')});}
-function mthPdfTeam(){generateAndPrintReport();document.getElementById('reportGeneratedDate').textContent=new Date().toLocaleDateString('en-IN');return mthPdfFromElement(document.getElementById('printableReportArea'),{title:'Team Performance and Attendance',landscape:true,filter:(document.getElementById('teamReportStartDate').value||'Beginning')+' to '+(document.getElementById('teamReportEndDate').value||'Latest')+' | '+(mthShowInactive()?'Including inactive members':'Active members')});}
+function mthPdfTeam(){if(!mthValidateTeamReportDates(true))return;generateAndPrintReport();document.getElementById('reportGeneratedDate').textContent=new Date().toLocaleDateString('en-IN');return mthPdfFromElement(document.getElementById('printableReportArea'),{title:'Team Performance and Attendance',landscape:true,filter:(document.getElementById('teamReportStartDate').value||'Beginning')+' to '+(document.getElementById('teamReportEndDate').value||'Latest')+' | '+(mthShowInactive()?'Including inactive members':'Active members')});}
 function mthPdfDailyLogs(){renderDailyLogsTable();const holder=document.createElement('div');holder.innerHTML='<h1>Daily Logs and Field Journal</h1>';holder.appendChild(document.getElementById('dailyLogTableContainer').cloneNode(true));return mthPdfFromElement(holder,{title:'Daily Logs and Field Journal',filter:document.getElementById('logFilterSelect').selectedOptions[0].textContent+(document.getElementById('logSearchInput').value?' | Search: '+document.getElementById('logSearchInput').value:'')});}
 function mthPdfProjectInfo(){const p=mthInfoCurrent();if(!p){alert('The selected project changed. Reopen Project Info.');return;}mthPdfFromHTML(mthInfoPrintHTML(p),{title:p.name+' - Project Overview',filter:'All project details'});}
 </script>
@@ -6644,7 +6621,7 @@ function mthToggleSummaryPreview() {
 
 
 <style id="mth-team-directory-update">
-.mth-phone-number,#phoneNumber,#buyerPhone,#rptBuyerPhone,a[href^="tel:"]{font-weight:700!important;font-variant-numeric:lining-nums tabular-nums!important;letter-spacing:.2px}
+.mth-phone-number,#phoneNumber,#buyerPhone,#rptBuyerPhone,a[href^="tel:"]{font-family:Arial,Helvetica,sans-serif!important;font-weight:700!important;font-synthesis:weight!important;font-variant-numeric:lining-nums tabular-nums!important;color:#142c24!important;letter-spacing:.2px}
 .mth-phone-number{white-space:nowrap}
 #mthHiddenGenealogyPanel[hidden]{display:none!important}
 .mth-team-directory-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0}
@@ -6685,18 +6662,21 @@ function mthDirectoryScope(){return 'Role: '+(currentDesignationFilter==='ALL'?'
 function mthRefreshTeamDirectoryCount(){
  const count=document.getElementById('mthTeamDirectoryCount');if(count)count.textContent=mthFilteredTeamMembers().length+' members · '+mthDirectoryScope();
 }
-function mthPhoneDisplay(value){
+function mthIndianPhoneDigits(value){
  const raw=String(value??'').trim(),digits=raw.replace(/\D/g,'');
- const indian=n=>n.slice(0,4)+'-'+n.slice(4,7)+'-'+n.slice(7);
- if(raw.startsWith('+'))return digits.length===12&&digits.startsWith('91')?'+91 '+indian(digits.slice(2)):raw;
- if(digits.length===10)return indian(digits);
- if(digits.length===12&&digits.startsWith('91'))return indian(digits.slice(2));
- return raw;
+ if(digits.length===12&&digits.startsWith('91'))return digits.slice(2);
+ if(digits.length===14&&digits.startsWith('0091'))return digits.slice(4);
+ if(!raw.startsWith('+')&&digits.length===11&&digits.startsWith('0'))return digits.slice(1);
+ return !raw.startsWith('+')&&digits.length===10?digits:'';
+}
+function mthPhoneDisplay(value){
+ const raw=String(value??'').trim(),digits=mthIndianPhoneDigits(raw);
+ return digits?digits.slice(0,4)+'-'+digits.slice(4,7)+'-'+digits.slice(7):raw;
 }
 function mthPhoneForStorage(value){
- const raw=String(value||'').trim(),digits=raw.replace(/\D/g,'');
- if(raw.startsWith('+'))return '+'+digits;
- return digits.length===10?digits:raw;
+ const raw=String(value||'').trim(),indian=mthIndianPhoneDigits(raw);
+ if(indian)return indian;
+ return raw.startsWith('+')?'+'+raw.replace(/\D/g,''):raw;
 }
 function mthFormatPhoneInput(input){
  const raw=input.value;if(raw.trim().startsWith('+')){if(raw.replace(/\D/g,'').length===12&&raw.replace(/\D/g,'').startsWith('91'))input.value=mthPhoneDisplay(raw);return;}
@@ -6712,14 +6692,10 @@ function mthInitPhoneDisplays(){
 function mthDirectoryMemberDetails(member){
  return {name:member.name||'',phone:mthPhoneDisplay(member.phone),designation:member.designation||'',reportsTo:mthTeamReportsTo(member),joiningDate:member.joiningDate||'',tenure:calculateTenure(member.joiningDate),assignedSchedule:member.assignedSchedule||'',payId:member.payId||'',status:mthMemberIsActive(member)?'Active':'Inactive',birthday:member.birthday||member.memberBirthday||member.dob||'',importantDate:member.importantDate||member.familyAnniversary||member.anniversary||'',address:[...new Set([member.footnote,member.address,member.notes].map(value=>String(value||'').trim()).filter(Boolean))].join('\n')};
 }
-function mthBuildMemberDirectoryHTML(){
- const members=mthFilteredTeamMembers(),e=value=>escapeHtml(String(value||'—'));
- const rows=members.map((member,index)=>{const m=mthDirectoryMemberDetails(member);return '<tr><td>'+String(index+1)+'</td><td><strong>'+e(m.name)+'</strong><p>Status: '+e(m.status)+'</p><p>Birthday: '+e(m.birthday)+'</p><p>Important date: '+e(m.importantDate)+'</p></td><td>'+mthPhoneHTML(member.phone)+'<p><strong>Address / notes</strong><br>'+e(m.address)+'</p></td><td><strong>'+e(m.designation)+'</strong><p>Reports to: '+e(m.reportsTo)+'</p><p>Pay ID: '+e(m.payId)+'</p></td><td>Joined: '+e(m.joiningDate)+'<p>Tenure: '+e(m.tenure)+'</p><p>Schedule: '+e(m.assignedSchedule)+'</p></td></tr>';}).join('');
- return '<!doctype html><html><head><meta charset="utf-8"><style>body{font:12px Calibri,Arial,sans-serif;color:#112240;margin:0}h1{font-size:18px;margin:0 0 8px}.scope{margin:0 0 12px;font-size:11px}table{width:100%;border-collapse:collapse;table-layout:fixed}th,td{border:1px solid #bac8d8;padding:8px;vertical-align:top;text-align:left;overflow-wrap:anywhere;font-size:12px}th{background:#eaf0f7;font-weight:700}td p{margin:6px 0 0;line-height:1.35;white-space:pre-line}tr{break-inside:avoid}thead{display:table-header-group}.mth-phone-number{font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}</style></head><body><h1>Madras Trading House · Core Team Directory</h1><p class="scope">'+e(mthDirectoryScope())+' · '+members.length+' members</p><table><colgroup><col style="width:5%"><col style="width:22%"><col style="width:27%"><col style="width:21%"><col style="width:25%"></colgroup><thead><tr><th>Sl.</th><th>Member / status / dates</th><th>Phone / address / notes</th><th>Designation / upline / pay ID</th><th>Joined / tenure / schedule</th></tr></thead><tbody>'+rows+'</tbody></table></body></html>';
-}
+function mthBuildMemberDirectoryHTML(){return mthCompactMemberDirectoryHTML();}
 function mthPdfMemberDirectory(){
  if(!mthFilteredTeamMembers().length)return alert('No members match the selected role and status.');
- return mthPdfFromHTML(mthBuildMemberDirectoryHTML(),{title:'Core Team Directory',filter:mthDirectoryScope(),landscape:true});
+ return mthPdfFromHTML(mthBuildMemberDirectoryHTML(),{title:'Core Team Directory',filter:mthDirectoryScope(),landscape:false});
 }
 function mthExportMemberDirectoryExcel(){
  const rows=mthFilteredTeamMembers().map(member=>{const m=mthDirectoryMemberDetails(member);return [m.name,m.phone,m.designation,m.reportsTo,m.status,m.joiningDate,m.tenure,m.assignedSchedule,m.payId,m.birthday,m.importantDate,m.address];});
@@ -6736,7 +6712,7 @@ function mthWorkbookBytes(headers,rows,phoneColumn){
   '_rels/.rels':'<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>',
   'xl/workbook.xml':'<?xml version="1.0"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Members" sheetId="1" r:id="rId1"/></sheets></workbook>',
   'xl/_rels/workbook.xml.rels':'<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>',
-  'xl/styles.xml':'<?xml version="1.0"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="4"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1" applyAlignment="1"><alignment vertical="top" wrapText="1"/></xf><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1" applyAlignment="1"><alignment vertical="top"/></xf><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0" applyAlignment="1"><alignment vertical="top" wrapText="1"/></xf></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>',
+  'xl/styles.xml':'<?xml version="1.0"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="3"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Arial"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="4"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1" applyAlignment="1"><alignment vertical="top" wrapText="1"/></xf><xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1" applyAlignment="1"><alignment vertical="top"/></xf><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0" applyAlignment="1"><alignment vertical="top" wrapText="1"/></xf></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>',
   'xl/worksheets/sheet1.xml':'<?xml version="1.0"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><cols>'+headers.map((h,i)=>'<col min="'+(i+1)+'" max="'+(i+1)+'" width="'+(i===phoneColumn?20:/Address|Notes|Schedule/i.test(h)?48:24)+'" customWidth="1"/>').join('')+'</cols><sheetData>'+sheetRows+'</sheetData><autoFilter ref="A1:'+column(headers.length-1)+(rows.length+1)+'"/></worksheet>'
  };
  const encoder=new TextEncoder(),blocks=[],central=[];let offset=0;
@@ -6756,5 +6732,115 @@ function mthDownloadWorkbook(title,headers,rows,phoneColumn){
 
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mthInitPhoneDisplays);else mthInitPhoneDisplays();
 </script>
-</body>
+<script id="mth-current-batch">
+function mthCalendarWeek(date=mthMeetingToday()){
+ const d=new Date(date+'T12:00:00Z'),offset=(d.getUTCDay()+6)%7;
+ d.setUTCDate(d.getUTCDate()-offset);const from=d.toISOString().slice(0,10);d.setUTCDate(d.getUTCDate()+6);
+ return {from,to:d.toISOString().slice(0,10)};
+}
+function mthLimitTeamReportDates(){for(const id of ['teamReportStartDate','teamReportEndDate']){const field=document.getElementById(id);if(field)field.max=mthMeetingToday();}}
+function mthValidateTeamReportDates(notify=false){
+ mthLimitTeamReportDates();const start=document.getElementById('teamReportStartDate'),end=document.getElementById('teamReportEndDate'),today=mthMeetingToday();
+ let message='';if(start?.value>today||end?.value>today)message='Report dates cannot be in the future.';
+ else if(start?.value&&end?.value&&start.value>end.value)message='Start date must be on or before end date.';
+ for(const field of [start,end])if(field)field.setCustomValidity(message);
+ const box=document.getElementById('mthTeamReportDateError');if(box)box.textContent=message;
+ if(message&&notify)(end?.value>today?end:start)?.reportValidity();
+ return !message;
+}
+function mthSetTeamReportPeriod(kind){
+ const today=mthMeetingToday(),start=document.getElementById('teamReportStartDate'),end=document.getElementById('teamReportEndDate');
+ const week=mthCalendarWeek(today);let from=today;
+ if(kind==='week')from=week.from;else if(kind==='month')from=today.slice(0,8)+'01';else if(kind==='last7'){const d=new Date(today+'T12:00:00Z');d.setUTCDate(d.getUTCDate()-6);from=d.toISOString().slice(0,10);}
+ start.value=from;end.value=today;
+ const note=document.getElementById('mthTeamReportWeekNote');if(note)note.textContent=kind==='week'?'Week: '+week.from+' (Monday) to '+week.to+' (Sunday) · Actuals through '+today:'Weeks run Monday–Sunday. Last 7 days is a rolling range.';
+ if(mthValidateTeamReportDates())generateAndPrintReport();
+}
+function mthCompactMemberDirectoryHTML(){
+ const members=mthFilteredTeamMembers(),e=value=>escapeHtml(String(value||''));
+ const line=(label,value)=>value?'<p><span class="label">'+label+'</span>'+e(value)+'</p>':'';
+ const rows=members.map((member,index)=>{const m=mthDirectoryMemberDetails(member);
+  return '<tr><td class="serial">'+(index+1)+'</td><td><strong>'+e(m.name)+'</strong>'+(m.phone?'<p>'+mthPhoneHTML(member.phone)+'</p>':'')+(mthTeamStatusMode==='all'?line('Status: ',m.status):'')+'</td><td><strong>'+e(m.designation)+'</strong>'+line('Reports to: ',m.reportsTo)+line('Joined: ',m.joiningDate)+line('Tenure: ',m.joiningDate?m.tenure:'')+'</td><td>'+line('Schedule: ',m.assignedSchedule==='-- No meeting scheduled --'?'':m.assignedSchedule)+line('Pay ID: ',m.payId)+line('Birthday: ',m.birthday)+line('Important date: ',m.importantDate)+line('Address / notes: ',m.address)+'</td></tr>';
+ }).join('');
+ return '<!doctype html><html><head><meta charset="utf-8"><style>@page{size:A4 portrait;margin:10mm}body{font:12px Calibri,Arial,sans-serif;color:#112240;margin:0;line-height:1.25}.directory-brand{font-size:16px;margin:0 0 3px}.directory-count{font-size:11px;margin:0 0 8px}table{width:100%;border-collapse:collapse;table-layout:fixed}th,td{border:1px solid #b7c6d8;padding:5px 6px;vertical-align:top;text-align:left;overflow-wrap:anywhere;font-size:12px;line-height:1.25}th{background:#eaf0f7;font-size:11px}td p{margin:2px 0 0;white-space:pre-line}td.serial{text-align:center;padding-left:2px;padding-right:2px}.label{color:#4b596c}tr{break-inside:avoid}thead{display:table-header-group}.mth-phone-number{font-family:Arial,Helvetica,sans-serif!important;font-weight:700!important;white-space:nowrap;font-variant-numeric:lining-nums tabular-nums}</style></head><body><h2 class="directory-brand">Madras Trading House</h2><p class="directory-count">Core Team Directory · '+members.length+' members</p><table><colgroup><col style="width:5%"><col style="width:29%"><col style="width:30%"><col style="width:36%"></colgroup><thead><tr><th>Sl.</th><th>Member / phone</th><th>Role / upline / joining</th><th>Schedule / other details</th></tr></thead><tbody>'+rows+'</tbody></table></body></html>';
+}
+function mthMemberPhoneKey(value){
+ const raw=String(value||'').trim(),indian=mthIndianPhoneDigits(raw);if(indian)return indian;
+ const digits=raw.replace(/\D/g,'');return digits;
+}
+function mthMemberNameKey(value){return String(value||'').normalize('NFKC').toLowerCase().replace(/[^\p{L}\p{N}]/gu,'');}
+function mthFindMemberNumber(value,exclude=-1){
+ const number=mthMemberPhoneKey(value);if(!number)return -1;
+ return membersData.findIndex((member,index)=>index!==Number(exclude)&&mthMemberPhoneKey(member.phone)===number);
+}
+function mthMemberNameMatches(value,exclude=-1){
+ const name=mthMemberNameKey(value);return name?membersData.map((member,index)=>({member,index})).filter(row=>row.index!==Number(exclude)&&mthMemberNameKey(row.member.name)===name):[];
+}
+function mthShowMemberDuplicateHint(){
+ const box=document.getElementById('mthMemberDuplicateHint');if(!box)return;
+ box.replaceChildren();const raw=document.getElementById('memberEditIndex').value,exclude=raw===''?-1:Number(raw),phone=document.getElementById('phoneNumber').value,name=document.getElementById('memberName').value;
+ const index=mthFindMemberNumber(phone,exclude),sameName=mthMemberNameMatches(name,exclude),match=index>=0?{index,member:membersData[index]}:sameName[0];
+ box.hidden=!match;if(!match)return;
+ const text=document.createElement('span');text.textContent=(index>=0?'Number already belongs to ':'Same name exists — check before saving: ')+match.member.name+' · '+mthPhoneDisplay(match.member.phone)+' · '+(mthMemberIsActive(match.member)?'Active':'Inactive')+' ';
+ const open=document.createElement('button');open.type='button';open.className='team-btn-secondary';open.textContent='Open existing record';open.onclick=()=>editMember(match.index);box.append(text,open);
+}
+function mthCheckMemberNumberBeforeSave(name,phone,editIndex){
+ const exclude=editIndex===''?-1:Number(editIndex),index=mthFindMemberNumber(phone,exclude);
+ if(index>=0){mthShowMemberDuplicateHint();alert('Duplicate number '+mthPhoneDisplay(phone)+' already belongs to '+membersData[index].name+'. Open the existing record.');return false;}
+ if(!mthMemberPhoneKey(phone)&&mthMemberNameMatches(name,exclude).length){mthShowMemberDuplicateHint();alert('This member name already exists. Open the existing record or enter a different phone number.');return false;}
+ return true;
+}
+function mthExistingMemberDuplicates(){
+ const groups=new Map();
+ for(const field of ['phone','name']){
+  const found=new Map();membersData.forEach((member,index)=>{const key=field==='phone'?mthMemberPhoneKey(member.phone):mthMemberNameKey(member.name);if(!key)return;if(!found.has(key))found.set(key,[]);found.get(key).push(index);});
+  for(const [key,indices] of found)if(indices.length>1){const identity=indices.join(',');if(!groups.has(identity))groups.set(identity,{indices,reasons:[]});groups.get(identity).reasons.push(field==='phone'?'Shared number '+mthPhoneDisplay(membersData[indices[0]].phone):'Same name');}
+ }
+ return [...groups.values()];
+}
+let mthLastMemberImportIssues=[];
+function mthRenderMemberDuplicateReview(){
+ const box=document.getElementById('mthMemberDuplicateReview');if(!box)return;
+ const groups=mthExistingMemberDuplicates();box.replaceChildren();box.hidden=!groups.length&&!mthLastMemberImportIssues.length;if(box.hidden)return;
+ const summary=document.createElement('summary');summary.textContent=groups.length+' existing duplicate groups · '+mthLastMemberImportIssues.length+' import rows held for review';box.append(summary);
+ const note=document.createElement('p');note.textContent='Records and attendance are retained. Review and correct the existing member details; no automatic merge or deletion.';box.append(note);
+ for(const group of groups){const row=document.createElement('div'),label=document.createElement('strong');label.textContent=group.reasons.join(' · ');row.append(label);
+  for(const index of group.indices){const member=membersData[index],button=document.createElement('button');button.type='button';button.className='team-btn-secondary';button.style.margin='4px';button.textContent=member.name+' · '+(mthMemberIsActive(member)?'Active':'Inactive')+' — Open';button.onclick=()=>editMember(index);row.append(button);}box.append(row);
+ }
+ for(const issue of mthLastMemberImportIssues){const p=document.createElement('p');p.textContent='Row '+issue.row+': '+issue.name+' · '+mthPhoneDisplay(issue.phone)+' — '+issue.reason;box.append(p);}
+}
+function mthImportMembersSafely(importedRows){
+ let added=0,updated=0;const issues=[],seenPhones=new Set();
+ importedRows.forEach((row,offset)=>{
+  const get=(...keys)=>{for(const wanted of keys){const key=Object.keys(row).find(k=>k.trim().toLowerCase()===wanted);if(key!==undefined&&row[key]!==null&&row[key]!==undefined&&String(row[key]).trim())return String(row[key]).trim();}return '';};
+  const name=get('name','member name','member'),phone=get('phone','phone number','mobile','mobile number'),number=mthMemberPhoneKey(phone);
+  const hold=reason=>issues.push({row:offset+2,name,phone,reason,source:{...row}});if(!name){hold('Member name is missing');return;}
+  if(number&&seenPhones.has(number)){hold('Repeated number in the import file');return;}if(number)seenPhones.add(number);
+  const numberMatches=number?membersData.map((m,index)=>({m,index})).filter(x=>mthMemberPhoneKey(x.m.phone)===number):[];
+  const nameMatches=mthMemberNameMatches(name);
+  if(numberMatches.length>1||nameMatches.length>1){hold('Existing duplicates need review before updating');return;}
+  const byPhone=numberMatches[0],byName=nameMatches[0];
+  if(byPhone&&mthMemberNameKey(byPhone.m.name)!==mthMemberNameKey(name)){hold('Number already belongs to '+byPhone.m.name+'; open the existing member');return;}
+  if(byPhone&&byName&&byPhone.index!==byName.index){hold('Name and phone point to different existing members');return;}
+  if(byName&&number&&mthMemberPhoneKey(byName.member.phone)&&mthMemberPhoneKey(byName.member.phone)!==number){hold('Same name has a different number; review before changing the existing record');return;}
+  const index=byPhone?.index??byName?.index??-1,old=index>=0?membersData[index]:null;
+  const designation=(get('designation','role')||old?.designation||'SM').toUpperCase(),reportsTo=get('reportsto','reports to','upline')||old?.reportsTo||'Sashi Nair';
+  const next={...(old||{}),name:old?.name||name,phone:phone?mthPhoneForStorage(phone):old?.phone||'',designation,reportsTo,
+   joiningDate:get('joiningdate','date joined')||old?.joiningDate||mthMeetingToday(),assignedSchedule:get('assignedschedule','schedule')||old?.assignedSchedule||'-- No meeting scheduled --',footnote:get('footnote','notes','address')||old?.footnote||'',birthday:get('birthday','dob','member birthday')||old?.birthday||'',importantDate:get('important date','anniversary')||old?.importantDate||''};
+  next.reportsTo=mthTeamReportsTo(next);next.payId=old?.payId&&old.designation===designation&&old.reportsTo===next.reportsTo?old.payId:generatePayId(designation,next.reportsTo);
+  const active=get('active','membership','membership status','status');if(active)next.active=!['false','0','no','inactive','deactivated'].includes(active.toLowerCase());else if(!old)next.active=true;
+  if(index>=0){membersData[index]=next;updated++;}else{membersData.push(next);added++;}
+ });
+ mthLastMemberImportIssues=issues;if(added||updated)autoSaveTeamState();renderMemberTable();mthRenderMemberDuplicateReview();
+ alert('Import complete: '+added+' added, '+updated+' updated, '+issues.length+' held for review. Duplicate numbers were not added.');
+ return {added,updated,issues};
+}
+function mthInitCurrentBatch(){
+ mthLimitTeamReportDates();
+ for(const id of ['memberName','phoneNumber'])document.getElementById(id)?.addEventListener('input',mthShowMemberDuplicateHint);
+ mthRenderMemberDuplicateReview();
+}
+
+document.addEventListener("DOMContentLoaded",mthInitCurrentBatch);
+</script></body>
 </html>
