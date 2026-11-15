@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Madras Trading House | Plot Sales Monitor & Team · Release 2611_15_0013 IST</title>
+    <title>Madras Trading House | Plot Sales Monitor & Team · Release 2611_15_2108 IST</title>
 
     <!-- PWA manifest + theme color: required for Chrome to offer "Install app" -->
     <link rel="manifest" href="./manifest.json">
@@ -1131,11 +1131,11 @@
 
 <div class="container">
 
-    <div class="app-brand-strip no-print" title="Release 2611_15_0013 IST">
+    <div class="app-brand-strip no-print" title="Release 2611_15_2108 IST">
         <img src="./icon-192.png" alt="Madras Trading House logo">
         <div class="app-brand-copy">
-            <strong>Madras Trading House</strong><!-- Release 2611_15_0013 IST; preserve approved header layout -->
-            <span>Plot Sales Monitor &amp; Team · Release 2611_15_0013 IST</span>
+            <strong>Madras Trading House</strong><!-- Release 2611_15_2108 IST; preserve approved header layout -->
+            <span>Plot Sales Monitor &amp; Team · Release 2611_15_2108 IST</span>
         </div>
     </div>
 
@@ -1197,7 +1197,7 @@
                         <button class="btn btn-success" type="button" onclick="addPlot()">➕ Add Plot</button>
                         <button type="button" class="btn" id="restoreDeletedPlotsBtn" onclick="mthRestoreDeletedPlot()" disabled>Restore Deleted (0)</button>
                         <button type="button" class="btn btn-outline" id="mthOrderModeBtn" onclick="mthToggleManualPlotOrder()" title="Switch between automatic numerical order and manual row ordering">↕ Manual order: OFF</button>
-                        <button class="btn" style="background-color: #4f46e5;" onclick="triggerVacantReportPrint()">🖨️ Print Vacant Report</button><button type="button" class="btn btn-outline" onclick="mthPdfVacant()">Open / Share PDF</button>
+                        <button type="button" class="btn" onclick="mthPdfVacant()">Preview / Print / Share PDF</button>
                         <button type="button" class="btn btn-outline" onclick="mthOpenHistoryReport()">🖨️ Booking / Sold History</button>
                         <button class="btn btn-whatsapp" title="Share a text summary via WhatsApp" onclick="shareVacantReportViaWhatsApp()">💬 WhatsApp</button>
                     </div>
@@ -1218,7 +1218,7 @@
                     <div class="form-group"><label for="vacantAreaTo">To (SFT)</label><input id="vacantAreaTo" type="number" min="0" step="1" placeholder="e.g. 700" style="width:100px" oninput="mthAreaToChanged()"></div>
                     <button type="button" id="mthAreaNext" class="btn btn-outline" onclick="mthStepArea(1)" title="Next available plot size" aria-label="Next available plot size">▶</button>
                     <button type="button" class="btn" onclick="mthApplyAreaFilter()">Apply</button>
-                    <button type="button" class="btn btn-outline" onclick="mthClearAreaFilter()">Clear</button>
+                    <button type="button" class="btn btn-outline" id="mthClearAllButton" onclick="mthClearAreaFilter()" title="Reset all view filters and temporary selections" >Clear all</button>
                     <span id="vacantAreaMatches" style="font-weight:600;font-size:.75rem"></span>
                 </div>
                 <div class="toolbar no-print" style="margin:6px 0;align-items:end">
@@ -1428,7 +1428,7 @@
                 </div>
 
                 <div style="display: flex; gap: 6px; margin-bottom: 6px; flex-wrap: wrap; align-items: center;">
-                    <button class="btn" onclick="triggerBookingCostSheetPrint()">🖨️ Print / Save Document PDF</button><button type="button" class="btn btn-outline" onclick="mthPdfCostSheet()">Open / Share PDF</button>
+                    <button type="button" class="btn" onclick="mthPdfCostSheet()">Preview / Print / Share PDF</button>
                     <button class="btn btn-whatsapp" title="Share a text summary via WhatsApp" onclick="shareCostSheetViaWhatsApp()">💬 WhatsApp Text</button>
                 </div>
             </div>
@@ -1673,7 +1673,7 @@
 
               <button type="button" class="team-btn-secondary" onclick="generateAndPrintReport()">🔄 Update View</button>
               <button type="button" class="team-btn" style="background-color: #1b5e20;" onclick="exportReportToExcel()">📊 Export to Excel (.xlsx)</button>
-              <button type="button" class="team-btn" onclick="if(mthValidateTeamReportDates(true)){generateAndPrintReport();window.print()}">🖨️ Print / Save as PDF</button><button type="button" class="btn btn-outline" onclick="mthPdfTeam()">Open / Share PDF</button>
+              <button type="button" class="team-btn" onclick="mthPdfTeam()">Preview / Print / Share PDF</button>
 			                
               <!-- INTERNAL PAYOUT LEDGER TRIGGER BUTTON -->
               <button type="button" class="btn btn-outline" style="background-color: #722f23; color: white;" onclick="openInternalCommissionModal()">
@@ -1824,6 +1824,7 @@
                 <div class="team-form-group">
                   <label>Role / Designation *</label>
                   <select id="memberDesignation" onchange="autoAssignDefaultSchedule()" required>
+                    <option value="" selected>-- Select Role --</option>
                     <option value="SM">Sales Manager (SM)</option>
                     <option value="CP">Channel Partner (CP)</option>
                     <option value="BDM">BDM Manager</option>
@@ -1844,6 +1845,7 @@
                 <div class="team-form-group">
                   <label>Assigned Schedule</label>
                   <select id="assignedSchedule">
+                    <option value="" selected>-- Select Schedule (optional) --</option>
                     <option value="-- No meeting scheduled --">-- No meeting scheduled --</option>
                     <option value="All Meetings (DVP Core)">All Meetings (DVP Core)</option>
                     <option value="Monday DVP Review (11:00–13:30)">Monday DVP Review (11:00–13:30)</option>
@@ -2051,7 +2053,7 @@
                   <option value="7">Last 7 Days</option>
                   <option value="30">Last 30 Days</option>
                 </select>
-                <button class="team-btn" style="background-color: #1e3a8a; padding: 5px 10px; font-size: 0.75rem;" onclick="printDailyLogsPDF()">🖨️ Export / Print PDF</button><button type="button" class="btn btn-outline" onclick="mthPdfDailyLogs()">Open / Share PDF</button>
+                <button type="button" class="team-btn" onclick="mthPdfDailyLogs()">Preview / Print / Share PDF</button>
               </div>
             </div>
 
@@ -3570,7 +3572,7 @@ function mthRenderEstimateSelection() {
         const holder = document.getElementById(id); if (!holder) continue;
         holder.replaceChildren();
         const label = document.createElement('strong');
-        label.textContent = plots.length ? `Selected: ${plots.length} plot${plots.length === 1 ? '' : 's'} · ${area.toLocaleString('en-IN')} SFT` : 'Search and tick vacant plots for Estimate / Cost Sheet';
+        label.textContent = plots.length ? `Selected: ${plots.length} plot${plots.length === 1 ? '' : 's'} · ${area.toLocaleString('en-IN')} SFT` : 'Tick vacant plots below or search for Estimate / Cost Sheet';
         holder.append(label);
         for (const plot of plots) {
             const button = document.createElement('button'); button.type = 'button'; button.className = 'mth-selected-plot';
@@ -3583,6 +3585,9 @@ function mthRenderEstimateSelection() {
     const open = document.getElementById('mthOpenSelectedEstimate');
     if (open) { open.disabled = !plots.length; open.textContent = `Estimate / Cost Sheet (${plots.length})`; }
     const clear = document.getElementById('mthClearSelectedEstimate'); if (clear) clear.disabled = !plots.length;
+    document.querySelectorAll('#vacantReportTbody .mth-vacant-estimate-check').forEach(checkbox => {
+        checkbox.checked = mthEstimateSelected.has(checkbox.dataset.plotNo);
+    });
 }
 function populateMultiPlotSelect() {
     const project = mthReconcileEstimateSelection();
@@ -3858,9 +3863,38 @@ function mthApplyAreaFilter() {
     mthUpdateAreaArrows();
     updateVacantReport();
 }
+// Clear temporary view state together, without changing saved business data.
 function mthClearAreaFilter() {
-    mthSuggestAreaRange();
-    updateVacantReport();
+    const set = (id, value) => { const field = document.getElementById(id); if (field) { field.value = value; field.setCustomValidity?.(''); } };
+    set('vacantFaceFilter', '');
+    set('mthGroupingSelect', 'plot');
+    set('mthPlotSearch', '');
+    set('vacantAreaFrom', '');
+    set('vacantAreaTo', '');
+    mthAreaFilterApplied = false;
+    mthEstimateSelected.clear();
+    // All statuses remain available in plot lookup; team views return to Active.
+    mthTeamStatusMode = 'active';
+    set('mthTeamStatusFilter', 'active');
+    document.getElementById('mthShowInactiveMembers').checked = false;
+    currentDesignationFilter = 'ALL'; currentSortKey = 'name'; currentSortAsc = true;
+    document.querySelectorAll('.team-sub-tab-btn').forEach((button, index) => button.classList.toggle('active', index === 0));
+    set('meetDesigFilter', 'ALL');
+    document.querySelectorAll('.role-filter-matrix,.role-filter-grid').forEach(box => box.checked = box.defaultChecked);
+    const today = mthMeetingToday();
+    for (const id of ['gridMonthSelect', 'meetingMatrixMonth']) set(id, String(Number(today.slice(5, 7)) - 1));
+    for (const id of ['gridYearSelect', 'meetingMatrixYear']) set(id, today.slice(0, 4));
+    set('teamReportStartDate', today.slice(0, 8) + '01'); set('teamReportEndDate', today);
+    const note = document.getElementById('mthTeamReportWeekNote');
+    if (note) note.textContent = 'Weeks run Monday–Sunday. Last 7 days is a rolling range.';
+    set('logSearchInput', ''); set('logFilterSelect', 'ALL');
+    set('mthHistView', 'summary'); set('mthHistProject', '');
+    set('mthHistFrom', ''); set('mthHistTo', ''); set('mthHistVP', '');
+    mthRefreshMemberVisibility();
+    mthHistoryVPChanged(); set('mthHistDVP', ''); mthRenderHistoryReport();
+    mthValidateTeamReportDates(); renderDailyLogsTable();
+    populateMultiPlotSelect(); renderReport(); updateVacantReport();
+    document.getElementById('vacantAreaMatches').textContent += ' · Filters and selections cleared';
 }
 function mthReadAreaInputs() {
     const fromText = document.getElementById('vacantAreaFrom')?.value ?? '';
@@ -4054,7 +4088,7 @@ function updateVacantReport() {
     document.getElementById('vacantReportSubtitle').textContent = 'VACANT PLOTS AVAILABILITY REPORT';
     document.getElementById('mthVacantRangeHeading').textContent = faceFilter ? `${faceFilter} FACING PLOTS` : 'ALL AVAILABLE PLOTS';
     document.getElementById('mthVacantRangeCount').textContent = `${vacantPlots.length} PLOT${vacantPlots.length === 1 ? '' : 'S'} AVAILABLE | ${vacantPlots.reduce((sum, plot) => sum + Number(plot.area || 0), 0).toLocaleString('en-IN')} SFT TOTAL${areaFilter.active ? ' · AREA: ' + rangeText : ''}`;
-    document.getElementById('vacantAreaMatches').textContent = !mthReadAreaInputs().valid ? '⚠ Invalid range — edit before Apply' : (areaFilter.active || faceFilter) ? `${vacantPlots.length} matching vacant plots (of ${allVacantPlots.length})` : `${allVacantPlots.length} vacant plots · suggested range (click Apply)`;
+    document.getElementById('vacantAreaMatches').textContent = !mthReadAreaInputs().valid ? '⚠ Invalid range — edit before Apply' : (areaFilter.active || faceFilter) ? `${vacantPlots.length} matching vacant plots (of ${allVacantPlots.length})` : `${allVacantPlots.length} vacant plots` + (document.getElementById('vacantAreaFrom').value !== '' ? ' · suggested range (click Apply)' : ' · all areas');
     const byArea = new Map();
     vacantPlots.forEach(plot => { const area = Number(plot.area || 0); byArea.set(area, (byArea.get(area) || 0) + 1); });
     document.getElementById('vacantAreaBreakdownSummary').textContent = `📐 Available by Area · ${vacantPlots.length} plots · ${vacantPlots.reduce((sum, plot) => sum + Number(plot.area || 0), 0).toLocaleString('en-IN')} SFT`;
@@ -4171,9 +4205,21 @@ function updateVacantReport() {
                 <td style="text-align: right; font-weight: 600;">${formatCurrency(fin.subtotal)}</td>
                 <td style="text-align: left;">${plot.notes || '-'}</td>
             `;
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.className = 'mth-vacant-estimate-check no-print';
+            checkbox.dataset.plotNo = String(plot.plotNo);
+            checkbox.checked = mthEstimateSelected.has(String(plot.plotNo));
+            checkbox.setAttribute('aria-label', 'Select plot ' + plot.plotNo + ' for estimate');
+            checkbox.title = 'Select plot ' + plot.plotNo + ' for Estimate / Cost Sheet';
+            checkbox.style.cssText = 'width:18px;height:18px;min-height:0;margin:0 6px 0 0;vertical-align:middle;cursor:pointer';
+            checkbox.onchange = () => mthSetEstimatePlot(String(plot.plotNo), checkbox.checked);
+            tr.cells[0].prepend(checkbox);
             tbody.appendChild(tr);
         });
     }
+
+    mthRenderEstimateSelection();
 
     // Areas for project-wide totals; only the vacant card follows the selected range.
     const sumArea = plots => plots.reduce((sum, plot) => sum + (Number(plot.area) || 0), 0).toLocaleString('en-IN') + ' SFT';
@@ -4938,6 +4984,7 @@ function saveMemberRecord() {
   const reportsTo = mthTeamReportsTo({name,designation,reportsTo:document.getElementById('reportsToSelect').value});
 
   if (!name) return alert("Member Name cannot be blank.");
+  if (!designation) return alert('Select a role / designation.');
   if (!reportsTo && !['DVP', 'VP'].includes(designation)) return alert("Please select an upline sponsor.");
 
   const payId = generatePayId(designation, reportsTo);
@@ -5676,6 +5723,7 @@ window.mthSaveSaleDetails=function(){
 window.mthAddSaleMember=function(){
  const name=byId('mthSaleMemberName').value.trim(),code=byId('mthSaleMemberCode').value.trim().toUpperCase(),role=byId('mthSaleMemberRole').value;
  if(!name||!code){alert('Enter name and short code.');return;}
+ if(directory().some(x=>mthMemberNameKey(x.name)===mthMemberNameKey(name))){alert('This member already exists in the VP / DVP directory. Use the existing entry.');return;}
  if(directory().some(x=>x.code.toUpperCase()===code)){alert('Short code already in use. Choose another.');return;}
  const parentVPId=role==='DVP'?byId('mthSaleMemberVP').value:null;
  if(role==='DVP'&&!directory().some(x=>x.id===parentVPId&&x.role==='VP'&&mthMemberIsActive(x))){alert('Select the parent VP for this member.');return;}
@@ -5706,7 +5754,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&byId('mthSaleOverla
 <label>To (IST)<input type="date" id="mthHistTo" onchange="mthRenderHistoryReport()"></label>
 <label>VP<select id="mthHistVP" onchange="mthHistoryVPChanged()"></select></label>
 <label>DVP<select id="mthHistDVP" onchange="mthRenderHistoryReport()"></select></label>
-<button class="btn" onclick="mthPrintHistoryReport()">Print / Save PDF</button><button type="button" class="btn btn-outline" onclick="mthPrintHistoryReport(true)">Open / Share PDF</button></div>
+<button type="button" class="btn" onclick="mthPrintHistoryReport(true)">Preview / Print / Share PDF</button></div>
 <p style="font-size:12px;margin:8px 0">Earlier status entries may lack team details or booking dates. These remain blank. Current records without saved history are labelled. Summary counts current Booked / Sold plots; date filters use booking date for Booked and registration date for Sold. Plot booking flow shows confirmed status changes only. Notes and team edits update booking details without adding status events. It groups each plot’s saved events in their original order; Step is the sequence within that plot. Event date is the date entered at confirmation; older entries show Not recorded. Recorded on is the entry time. Date filters use Event date when available, otherwise Recorded on. Older team changes remain visible as recorded. Undated entries appear only without date filters.</p>
 <div id="mthHistoryCount" style="font-weight:bold;margin:8px 0"></div><div id="mthHistoryPreview"></div>
 </div></div>
@@ -5836,7 +5884,7 @@ window.mthPrintHistoryReport=function(openPDF=false){
 <div class="mth-info-grid" id="mthInfoFields"></div>
 <div class="mth-info-actions"><button type="submit" class="btn btn-primary">Save Project Info</button><button type="button" class="btn btn-outline" onclick="mthInfoCancelEdit()">Cancel</button></div>
 </form>
-<div class="mth-info-actions" id="mthInfoViewActions"><button type="button" class="btn btn-outline" onclick="mthInfoEdit()">Edit</button><button type="button" class="btn btn-primary" onclick="mthInfoPrint()">Print / Save PDF</button><button type="button" class="btn btn-outline" onclick="mthPdfProjectInfo()">Open / Share PDF</button></div>
+<div class="mth-info-actions" id="mthInfoViewActions"><button type="button" class="btn btn-outline" onclick="mthInfoEdit()">Edit</button><button type="button" class="btn btn-primary" onclick="mthPdfProjectInfo()">Preview / Print / Share PDF</button></div>
 <div class="mth-info-actions"><button type="button" class="btn btn-outline" onclick="mthInfoClose()">Close</button></div>
 </dialog>
 <script>
@@ -6389,7 +6437,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
   <h2 id="mthPdfTitle">Preparing PDF</h2>
   <div id="mthPdfButtons">
    <button type="button" class="btn" id="mthPdfShare" onclick="mthPdfShareFile()" disabled>Share PDF</button>
-   <button type="button" class="btn btn-outline" id="mthPdfOpen" onclick="mthPdfOpenFile()" disabled>Open PDF</button>
+   <button type="button" class="btn btn-outline" id="mthPdfOpen" onclick="mthPdfOpenFile()" disabled>Open / Print PDF</button>
    <button type="button" class="btn btn-outline" id="mthPdfDownload" onclick="mthPdfDownloadFile()" disabled>Download</button>
    <button type="button" class="btn btn-outline" onclick="mthPdfClose()">Close</button>
   </div>
@@ -6606,6 +6654,11 @@ function mthToggleSummaryPreview() {
 }
 </script>
 
+<style id="mth-clear-button-style">
+#mthClearAllButton{background:#fff1ce;color:#704b12;border:1px solid #e3c98f;font-weight:600}
+#mthClearAllButton:hover{background:#f8e5b8;border-color:#c8a55c}
+#mthClearAllButton:focus-visible{outline:3px solid #b98728;outline-offset:2px}
+</style>
 <style id="mth-estimate-search-selection">
 .mth-estimate-selection{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;background:#eef4ff;border:1px solid #cbd8ee;border-radius:6px;padding:9px;margin:8px 0;font-size:12px}
 .mth-estimate-selection>div:first-child{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
@@ -6784,10 +6837,16 @@ function mthShowMemberDuplicateHint(){
  const text=document.createElement('span');text.textContent=(index>=0?'Number already belongs to ':'Same name exists — check before saving: ')+match.member.name+' · '+mthPhoneDisplay(match.member.phone)+' · '+(mthMemberIsActive(match.member)?'Active':'Inactive')+' ';
  const open=document.createElement('button');open.type='button';open.className='team-btn-secondary';open.textContent='Open existing record';open.onclick=()=>editMember(match.index);box.append(text,open);
 }
+function mthValidMemberPhone(value){
+ const raw=String(value||'').trim();if(!raw)return true;
+ const indian=mthIndianPhoneDigits(raw);
+ return indian?/^[6-9]\d{9}$/.test(indian):/^\+[1-9]\d{6,14}$/.test(raw.replace(/[\s()-]/g,''));
+}
 function mthCheckMemberNumberBeforeSave(name,phone,editIndex){
+ if(!mthValidMemberPhone(phone)){alert('Enter a valid 10-digit Indian mobile starting with 6–9, or an international number with +country code.');return false;}
  const exclude=editIndex===''?-1:Number(editIndex),index=mthFindMemberNumber(phone,exclude);
  if(index>=0){mthShowMemberDuplicateHint();alert('Duplicate number '+mthPhoneDisplay(phone)+' already belongs to '+membersData[index].name+'. Open the existing record.');return false;}
- if(!mthMemberPhoneKey(phone)&&mthMemberNameMatches(name,exclude).length){mthShowMemberDuplicateHint();alert('This member name already exists. Open the existing record or enter a different phone number.');return false;}
+ if(mthMemberNameMatches(name,exclude).length){mthShowMemberDuplicateHint();alert('This member name already exists. Open the existing record to update it.');return false;}
  return true;
 }
 function mthExistingMemberDuplicates(){
@@ -6815,6 +6874,7 @@ function mthImportMembersSafely(importedRows){
   const get=(...keys)=>{for(const wanted of keys){const key=Object.keys(row).find(k=>k.trim().toLowerCase()===wanted);if(key!==undefined&&row[key]!==null&&row[key]!==undefined&&String(row[key]).trim())return String(row[key]).trim();}return '';};
   const name=get('name','member name','member'),phone=get('phone','phone number','mobile','mobile number'),number=mthMemberPhoneKey(phone);
   const hold=reason=>issues.push({row:offset+2,name,phone,reason,source:{...row}});if(!name){hold('Member name is missing');return;}
+  if(!mthValidMemberPhone(phone)){hold('Invalid mobile number');return;}
   if(number&&seenPhones.has(number)){hold('Repeated number in the import file');return;}if(number)seenPhones.add(number);
   const numberMatches=number?membersData.map((m,index)=>({m,index})).filter(x=>mthMemberPhoneKey(x.m.phone)===number):[];
   const nameMatches=mthMemberNameMatches(name);
