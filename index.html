@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Madras Trading House | Plot Sales Monitor & Team · Release 2611_18_1628 IST</title>
+    <title>Madras Trading House | Plot Sales Monitor & Team · Release 2611_18_1724 IST</title>
 
     <!-- PWA manifest + theme color: required for Chrome to offer "Install app" -->
     <link rel="manifest" href="./manifest.json">
@@ -1179,11 +1179,11 @@
 
 <div class="container">
 
-    <div class="app-brand-strip no-print" title="Release 2611_18_1628 IST">
+    <div class="app-brand-strip no-print" title="Release 2611_18_1724 IST">
         <img src="./icon-192.png" alt="Madras Trading House logo">
         <div class="app-brand-copy">
-            <strong>Madras Trading House</strong><!-- Release 2611_18_1628 IST; preserve approved header layout -->
-            <span>Plot Sales Monitor &amp; Team · Release 2611_18_1628 IST</span>
+            <strong>Madras Trading House</strong><!-- Release 2611_18_1724 IST; preserve approved header layout -->
+            <span>Plot Sales Monitor &amp; Team · Release 2611_18_1724 IST</span>
         </div>
     </div>
 
@@ -1272,7 +1272,7 @@
                         </div>
                         <div class="mth-inventory-action-group">
                             <button type="button" class="btn" onclick="mthApplyAreaFilter()">Apply</button>
-                            <button type="button" class="btn btn-outline" id="mthClearAllButton" onclick="mthClearAreaFilter()" title="Reset all view filters and temporary selections" >Clear all</button>
+                            <button type="button" class="btn btn-outline" id="mthClearAllButton" onclick="mthClearAreaFilter()" title="Reset all view filters, selections and the project offer to ₹0 per sft" >Clear all</button>
                         </div>
                     </div>
                     <span id="vacantAreaMatches" class="mth-inventory-hint"></span>
@@ -1290,8 +1290,8 @@
                     <div class="mth-project-offer">
                         <div class="form-group">
                             <label for="inventoryOfferSft">Project offer per sft (₹)</label>
-                            <input id="inventoryOfferSft" type="number" min="0" step="any" inputmode="decimal" required
-                                aria-describedby="mthProjectOfferHint" onchange="updateProjectOffer(this)" onkeydown="if(event.key==='Enter')this.blur()">
+                            <input id="inventoryOfferSft" type="number" min="0" step="any" inputmode="decimal"
+                                aria-describedby="mthProjectOfferHint" oninput="updateProjectOffer(this)" onblur="this.value=getActiveProject().offerSft ?? 25">
                         </div>
                         <span id="mthProjectOfferHint" class="mth-inventory-hint">Same offer as Project &amp; Bank Setup</span>
                     </div>
@@ -1654,7 +1654,7 @@
                 <div class="form-grid" style="margin-top: 4px;">
                     <div class="form-group"><label>Project Name</label><input type="text" id="projName" oninput="updateData()"></div>
                     <div class="form-group"><label>Price / SFT (₹)</label><input type="number" id="priceSft" oninput="updateData()"></div>
-                    <div class="form-group"><label for="offerSft">Offer / SFT (₹)</label><input type="number" id="offerSft" min="0" step="any" inputmode="decimal" required onchange="updateProjectOffer(this)" onkeydown="if(event.key==='Enter')this.blur()"></div>
+                    <div class="form-group"><label for="offerSft">Offer / SFT (₹)</label><input type="number" id="offerSft" min="0" step="any" inputmode="decimal" oninput="updateProjectOffer(this)" onblur="this.value=getActiveProject().offerSft ?? 25"></div>
                     <div class="form-group"><label>Corner</label><input type="number" id="cornerSft" oninput="updateData()"></div>
                     <div class="form-group"><label>Govt. Guide Value (₹)</label><input type="number" id="guideValue" oninput="updateData()"></div>
                     <div class="form-group"><label>Tax %</label><input type="number" id="taxPct" oninput="updateData()"></div>
@@ -2942,21 +2942,28 @@ function mthBookingProject() {
     return { ...project, offerSft: offer };
 }
 
-function syncProjectOfferFields(offer) {
-    document.getElementById("offerSft").value = offer;
-    document.getElementById("inventoryOfferSft").value = offer;
+function syncProjectOfferFields(offer, source) {
+    for (const id of ["offerSft", "inventoryOfferSft"]) {
+        const field = document.getElementById(id);
+        if (field !== source) field.value = offer;
+    }
+}
+
+function setProjectOffer(offer, source) {
+    const project = getActiveProject();
+    const previousOffer = project.offerSft ?? 25;
+    const changed = project.offerSft !== offer;
+    project.offerSft = offer;
+    syncProjectOfferFields(offer, source);
+    const estimateOffer = document.getElementById("bookingOfferSft");
+    if (estimateOffer.value === "" || Number(estimateOffer.value) === Number(previousOffer)) estimateOffer.value = offer;
+    return changed;
 }
 
 function updateProjectOffer(input) {
-    if (!input.reportValidity()) return;
-    const project = getActiveProject();
-    const previousOffer = project.offerSft ?? 25;
+    if (!input.validity.valid) return;
     const offer = Number(input.value);
-    if (input.value === "" || !Number.isFinite(offer) || offer < 0) return;
-    project.offerSft = offer;
-    syncProjectOfferFields(offer);
-    const estimateOffer = document.getElementById("bookingOfferSft");
-    if (estimateOffer.value === "" || Number(estimateOffer.value) === Number(previousOffer)) estimateOffer.value = offer;
+    if (!Number.isFinite(offer) || offer < 0 || !setProjectOffer(offer, input)) return;
     renderInventoryTable();
     renderReport();
     updateVacantReport();
@@ -3961,7 +3968,7 @@ function mthApplyAreaFilter() {
     mthUpdateAreaArrows();
     updateVacantReport();
 }
-// Clear temporary view state together, without changing saved business data.
+// Reset the view and clear the active project's offer.
 function mthClearAreaFilter() {
     const set = (id, value) => { const field = document.getElementById(id); if (field) { field.value = value; field.setCustomValidity?.(''); } };
     set('vacantFaceFilter', '');
@@ -3972,6 +3979,7 @@ function mthClearAreaFilter() {
     set('mthBudgetLakh', '');
     set('mthBudgetTolerance', '25000');
     set('mthBudgetMode', 'around');
+    const offerChanged = setProjectOffer(0);
     mthAreaFilterApplied = false;
     mthEstimateSelected.clear();
     // All statuses remain available in plot lookup; team views return to Active.
@@ -3994,8 +4002,13 @@ function mthClearAreaFilter() {
     mthRefreshMemberVisibility();
     mthHistoryVPChanged(); set('mthHistDVP', ''); mthRenderHistoryReport();
     mthValidateTeamReportDates(); renderDailyLogsTable();
+    if (offerChanged) {
+        renderInventoryTable();
+        updateReportTimestamp();
+        autoSaveState();
+    }
     populateMultiPlotSelect(); renderReport(); updateVacantReport();
-    document.getElementById('vacantAreaMatches').textContent += ' · Filters and selections cleared';
+    document.getElementById('vacantAreaMatches').textContent += ' · Filters, selections and offer cleared';
 }
 function mthReadAreaInputs() {
     const fromText = document.getElementById('vacantAreaFrom')?.value ?? '';
