@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Madras Trading House | Plot Sales Monitor & Team · Release 2611_18_1430 IST</title>
+    <title>Madras Trading House | Plot Sales Monitor & Team · Release 2611_18_1527 IST</title>
 
     <!-- PWA manifest + theme color: required for Chrome to offer "Install app" -->
     <link rel="manifest" href="./manifest.json">
@@ -1090,10 +1090,18 @@
 @media print {
   html[data-print-report="vacant"] { page: mth-vacant; }
   @page mth-vacant {
-    margin-top: 13mm;
-    @top-center {
+    margin-top: 16mm;
+    @top-left {
+      width: 55%;
+      font: bold 13pt/1.15 Arial, sans-serif;
+      color: #173a64;
+      vertical-align: middle;
+    }
+    @top-right {
+      width: 45%;
       font: 8pt/1.2 Arial, sans-serif;
       color: #475569;
+      text-align: right;
       vertical-align: middle;
     }
     @bottom-center { content: "Page " counter(page) " of " counter(pages); }
@@ -1134,11 +1142,11 @@
 
 <div class="container">
 
-    <div class="app-brand-strip no-print" title="Release 2611_18_1430 IST">
+    <div class="app-brand-strip no-print" title="Release 2611_18_1527 IST">
         <img src="./icon-192.png" alt="Madras Trading House logo">
         <div class="app-brand-copy">
-            <strong>Madras Trading House</strong><!-- Release 2611_18_1430 IST; preserve approved header layout -->
-            <span>Plot Sales Monitor &amp; Team · Release 2611_18_1430 IST</span>
+            <strong>Madras Trading House</strong><!-- Release 2611_18_1527 IST; preserve approved header layout -->
+            <span>Plot Sales Monitor &amp; Team · Release 2611_18_1527 IST</span>
         </div>
     </div>
 
@@ -1210,6 +1218,7 @@
                     <strong style="font-size:.8rem">📐 Vacant plot view</strong>
                     <div class="form-group"><label for="vacantFaceFilter">FACE</label><select id="vacantFaceFilter" onchange="updateVacantReport()" style="min-width:120px">
                         <option value="">All directions</option>
+                        <option value="CORNER">All corner plots</option>
                         <option value="NORTH">N — North</option><option value="NORTH EAST">NE — North East</option>
                         <option value="EAST">E — East</option><option value="SOUTH EAST">SE — South East</option>
                         <option value="SOUTH">S — South</option><option value="SOUTH WEST">SW — South West</option>
@@ -3796,8 +3805,9 @@ function mthToggleAreaBreakdown() {
 let mthAreaFilterApplied = false;
 function mthVacantSizes() {
     const p = getActiveProject();
+    const cornersOnly = mthGetFaceFilter() === 'CORNER';
     return [...new Set((p.plots || [])
-        .filter(plot => String(plot.status || 'Vacant').trim().toLowerCase() === 'vacant')
+        .filter(plot => String(plot.status || 'Vacant').trim().toLowerCase() === 'vacant' && (!cornersOnly || plot.corner))
         .map(plot => Number(plot.area)).filter(n => Number.isFinite(n) && n > 0))].sort((a,b) => a-b);
 }
 function mthSuggestAreaRange() {
@@ -3958,7 +3968,8 @@ function mthWidenBudget() {
 
 // Display grouping does not change stored inventory or the selected FACE filter.
 function mthGroupByFacing() {
-    return !mthGetFaceFilter() && document.getElementById('mthGroupingSelect')?.value === 'facing';
+    const selectedFacing = mthGetFaceFilter();
+    return (!selectedFacing || selectedFacing === 'CORNER') && document.getElementById('mthGroupingSelect')?.value === 'facing';
 }
 function mthFacingKey(plot) {
     const key = String(plot.facing || '').trim().toUpperCase().replace(/[-_]+/g, ' ').replace(/\s+/g, ' ');
@@ -4090,23 +4101,27 @@ function mthGetFaceFilter() {
     return document.getElementById('vacantFaceFilter')?.value || '';
 }
 
-// Keep all eight FACE choices visible; only directions with vacant stock can be selected.
+// Keep every option visible and disable filters with no vacant stock.
 function mthUpdateFaceAvailability(vacantPlots) {
     const select = document.getElementById('vacantFaceFilter');
     if (!select) return;
     const counts = new Map();
+    let cornerCount = 0;
     vacantPlots.forEach(plot => {
         const key = mthFacingKey(plot);
         counts.set(key, (counts.get(key) || 0) + 1);
+        if (plot.corner) cornerCount += 1;
     });
     const labels = {NORTH:'N', 'NORTH EAST':'NE', EAST:'E', 'SOUTH EAST':'SE',
         SOUTH:'S', 'SOUTH WEST':'SW', WEST:'W', 'NORTH WEST':'NW'};
     for (const option of select.options) {
-        const count = option.value ? (counts.get(option.value) || 0) : vacantPlots.length;
-        option.textContent = `${option.value ? labels[option.value] : 'All'} — ${count}`;
+        const isCorner = option.value === 'CORNER';
+        const count = isCorner ? cornerCount : option.value ? (counts.get(option.value) || 0) : vacantPlots.length;
+        const label = isCorner ? 'All corner plots' : labels[option.value] || 'All';
+        option.textContent = `${label} — ${count}`;
         option.disabled = Boolean(option.value) && count === 0;
-        option.title = option.disabled ? 'No vacant plots in this direction' :
-            `${option.value || 'All directions'}: ${count} vacant plot${count === 1 ? '' : 's'}`;
+        option.title = option.disabled ? (isCorner ? 'No vacant corner plots' : 'No vacant plots in this direction') :
+            `${isCorner ? label : option.value || 'All directions'}: ${count} vacant plot${count === 1 ? '' : 's'}`;
     }
     if (select.selectedOptions[0]?.disabled) select.value = '';
 }
@@ -4125,15 +4140,16 @@ function mthVacantFinanceText(p,bank){
 
 function updateVacantReport() {
     mthRenderPlotLookup();
-    mthUpdateAreaArrows();
     const p = getActiveProject();
     document.getElementById('mthVacantFinanceStrip').textContent = mthVacantFinanceText(p, getActiveBank());
     const areaFilter = mthGetAreaFilter();
     const budget = mthReadBudgetFilter();
     const allVacantPlots = (p.plots || []).filter(plot => String(plot.status || 'Vacant').trim().toLowerCase() === 'vacant');
     mthUpdateFaceAvailability(allVacantPlots);
+    mthUpdateAreaArrows();
     const faceFilter = mthGetFaceFilter();
-    const vacantPlots = allVacantPlots.filter(plot => (!faceFilter || mthFacingKey(plot) === faceFilter) && areaFilter.valid &&
+    const cornersOnly = faceFilter === 'CORNER';
+    const vacantPlots = allVacantPlots.filter(plot => (cornersOnly ? plot.corner : !faceFilter || mthFacingKey(plot) === faceFilter) && areaFilter.valid &&
         (areaFilter.from === null || Number(plot.area) >= areaFilter.from) &&
         (areaFilter.to === null || Number(plot.area) <= areaFilter.to) && mthBudgetMatches(p, plot, budget));
     document.getElementById('mthBudgetTolerance').disabled = budget.upto;
@@ -4144,15 +4160,17 @@ function updateVacantReport() {
     const rangeText = areaFilter.active ? `${areaFilter.from ?? 'Any'}–${areaFilter.to ?? 'Any'} SFT` : 'All areas';
     const resultArea = vacantPlots.reduce((sum, plot) => sum + Number(plot.area || 0), 0).toLocaleString('en-IN');
     const reportFilters = [
-        faceFilter ? faceFilter + ' facing' : 'All facings',
         !areaFilter.valid ? 'Invalid area range' : areaFilter.active ? rangeText : 'All areas',
         vacantPlots.length.toLocaleString('en-IN') + ' available',
         resultArea + ' sft total',
         !budget.valid ? 'Invalid budget' : mthBudgetRangeText(budget)
     ].filter(Boolean).join(' | ');
-    document.getElementById('printableVacantReport').dataset.reportFilters = reportFilters;
+    const report = document.getElementById('printableVacantReport');
+    report.dataset.reportFacing = cornersOnly ? 'All corner plots' : faceFilter ? faceFilter + ' facing' : 'All facings';
+    report.dataset.reportFilters = reportFilters;
     document.getElementById('vacantReportSubtitle').textContent = 'VACANT PLOTS AVAILABILITY REPORT';
-    document.getElementById('mthVacantRangeHeading').textContent = faceFilter ? `${faceFilter} FACING PLOTS` : 'ALL AVAILABLE PLOTS';
+    document.getElementById('mthVacantRangeHeading').textContent = cornersOnly ? 'ALL AVAILABLE CORNER PLOTS' :
+        faceFilter ? `${faceFilter} FACING PLOTS` : 'ALL AVAILABLE PLOTS';
     document.getElementById('mthVacantRangeCount').textContent = `${vacantPlots.length} PLOT${vacantPlots.length === 1 ? '' : 'S'} AVAILABLE | ${resultArea} SFT TOTAL${areaFilter.active ? ' · AREA: ' + rangeText : ''}${budget.active ? ' · ' + mthBudgetRangeText(budget) + ' · CLOSEST TO BUDGET FIRST' : ''}${!budget.valid ? ' · INVALID BUDGET' : ''}`;
     document.getElementById('vacantAreaMatches').textContent = !mthReadAreaInputs().valid ? '⚠ Invalid range — edit before Apply' : (areaFilter.active || faceFilter || budget.active) ? `${vacantPlots.length} matching vacant plots (of ${allVacantPlots.length})` : `${allVacantPlots.length} vacant plots` + (document.getElementById('vacantAreaFrom').value !== '' ? ' · suggested range (click Apply)' : ' · all areas');
     const byArea = new Map();
@@ -4350,8 +4368,7 @@ function triggerVacantReportPrint() {
     updateVacantReport();
     document.body.classList.add('printing-vacant-report');
     document.documentElement.setAttribute('data-print-report', 'vacant');
-    const header = mthPdfCurrentProjectLabel() + ' - Vacant Plots | ' +
-        document.getElementById('printableVacantReport').dataset.reportFilters;
+    const {heading, filter} = mthVacantReportHeader();
     const indiaTime = Object.fromEntries(new Intl.DateTimeFormat('en-GB', {
         timeZone:'Asia/Kolkata', year:'2-digit', month:'2-digit', day:'2-digit',
         hour:'2-digit', minute:'2-digit', hourCycle:'h23'
@@ -4359,7 +4376,8 @@ function triggerVacantReportPrint() {
     const stamp = indiaTime.year + indiaTime.month + ' ' + indiaTime.day + ' ' + indiaTime.hour + indiaTime.minute + ' IST';
     const margins = document.createElement('style');
     margins.textContent = `@page mth-vacant {
-        @top-center { content: ${JSON.stringify(header.replace(/\s+/g, ' '))}; }
+        @top-left { content: ${JSON.stringify(heading.replace(/\s+/g, ' '))}; }
+        @top-right { content: ${JSON.stringify(('Vacant Plots | ' + filter).replace(/\s+/g, ' '))}; }
         @bottom-left { content: ${JSON.stringify('Printed: ' + stamp)}; }
     }`;
     document.head.appendChild(margins);
@@ -4380,7 +4398,9 @@ function triggerVacantReportPrint() {
         locationName = p.name.trim();
     }
     
-    document.title = `${locationName} - Vacant Plots${mthGetFaceFilter() ? " - " + mthGetFaceFilter() + " FACE" : ""} - ${yy}_${mm}${dd}_${hours}${minutes}`;
+    const selectedFacing = mthGetFaceFilter();
+    const filterSuffix = selectedFacing === 'CORNER' ? ' - Corner Plots' : selectedFacing ? ' - ' + selectedFacing + ' FACE' : '';
+    document.title = `${locationName} - Vacant Plots${filterSuffix} - ${yy}_${mm}${dd}_${hours}${minutes}`;
     setTimeout(() => {
         window.print();
         setTimeout(() => {
@@ -6607,14 +6627,20 @@ async function mthPdfFromElement(source,options={}){
   const totalHeight=Math.ceil(root.getBoundingClientRect().height);
   if(!totalHeight||!root.textContent.trim())throw new Error('There is no report content to export.');
   const pdf=new jspdf.jsPDF({orientation:landscape?'landscape':'portrait',unit:'mm',format:'a4',compress:true});
-  const header=title+(options.filter?' | '+options.filter:'');
-  const vacantReport=source.id==='printableVacantReport';
-  const printableHeader=vacantReport?header.replace(/₹/g,'Rs ').replace(/[–—]/g,'-'):header;
-  const cleanHeader=printableHeader.replace(/[^\x20-\x7E]/g,' ');
+  const heading=options.heading;
+  const header=(heading?'Vacant Plots':title)+(options.filter?' | '+options.filter:'');
+  const cleanHeader=(heading?header.replace(/₹/g,'Rs ').replace(/[–—]/g,'-'):header).replace(/[^\x20-\x7E]/g,' ');
+  const headingSize=13,headingStep=5.2,headingTop=8,detailStep=3.2;
+  let headingLines=[];
+  if(heading){
+   pdf.setFont('helvetica','bold');pdf.setFontSize(headingSize);
+   headingLines=pdf.splitTextToSize(heading,contentWidthMM);
+  }
   pdf.setFont('helvetica','normal');pdf.setFontSize(8);
   const headerLines=pdf.splitTextToSize(cleanHeader,contentWidthMM);
-  const lines=vacantReport?headerLines:headerLines.slice(0,2);
-  const reportTopMM=vacantReport?12+(lines.length-1)*3.2:17;
+  const lines=heading?headerLines:headerLines.slice(0,2);
+  const detailTop=heading?headingTop+headingStep*headingLines.length:7;
+  const reportTopMM=heading?detailTop+detailStep*(lines.length-1)+4.5:17;
   const capacity=(heightMM-reportTopMM-15)*pixelsPerMM,rect=root.getBoundingClientRect();
   const bounds=Array.from(root.querySelectorAll('tr,li,p,h1,h2,h3,.section-title,.signature-section,.b-unit')).map(e=>{
    const r=e.getBoundingClientRect(),group=e.tagName==='TR'&&e.cells.length===1&&e.cells[0].colSpan>1;
@@ -6662,15 +6688,26 @@ async function mthPdfFromElement(source,options={}){
   const stampParts=Object.fromEntries(new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Kolkata',year:'2-digit',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(new Date()).map(p=>[p.type,p.value]));
   const stamp=stampParts.year+stampParts.month+' '+stampParts.day+' '+stampParts.hour+stampParts.minute;
   for(let i=1;i<=pdf.getNumberOfPages();i++){
-   pdf.setPage(i);pdf.setFont('helvetica','normal');pdf.setFontSize(8);pdf.setTextColor('#475569');
-   pdf.text(lines,10,7,vacantReport?{lineHeightFactor:3.2*72/(8*25.4)}:undefined);pdf.setDrawColor('#cbd5e1');pdf.line(10,heightMM-11,widthMM-10,heightMM-11);
+   pdf.setPage(i);
+   if(heading){
+    pdf.setFont('helvetica','bold');pdf.setFontSize(headingSize);pdf.setTextColor('#173a64');
+    headingLines.forEach((line,n)=>pdf.text(line,10,headingTop+n*headingStep));
+   }
+   pdf.setFont('helvetica','normal');pdf.setFontSize(8);pdf.setTextColor('#475569');
+   if(heading)lines.forEach((line,n)=>pdf.text(line,10,detailTop+n*detailStep));
+   else pdf.text(lines,10,7);
+   pdf.setDrawColor('#cbd5e1');pdf.line(10,heightMM-11,widthMM-10,heightMM-11);
    pdf.text('Printed: '+stamp+' IST',10,heightMM-6);pdf.text('Page '+i+' of '+pageNo,widthMM/2,heightMM-6,{align:'center'});
    pdf.text('Sashi Nair',widthMM-10,heightMM-6,{align:'right'});
    const preview=document.createElement('canvas');preview.width=Math.round(widthMM*pixelsPerMM*1.2);preview.height=Math.round(heightMM*pixelsPerMM*1.2);
    const ps=preview.width/widthMM,pc=preview.getContext('2d'),img=new Image(),temp=URL.createObjectURL(previews[i-1]);
    try{img.src=temp;await img.decode();pc.drawImage(img,0,0);}finally{URL.revokeObjectURL(temp);}
+   if(heading){
+    pc.fillStyle='#173a64';pc.font='bold '+(headingSize*25.4/72*ps)+'px Arial';
+    headingLines.forEach((line,n)=>pc.fillText(line,10*ps,(headingTop+n*headingStep)*ps));
+   }
    pc.fillStyle='#475569';pc.font=(8*25.4/72*ps)+'px Arial';
-   lines.forEach((line,n)=>pc.fillText(line,10*ps,(7+n*3.2)*ps));
+   lines.forEach((line,n)=>pc.fillText(line,10*ps,(detailTop+n*detailStep)*ps));
    pc.strokeStyle='#cbd5e1';pc.beginPath();pc.moveTo(10*ps,(heightMM-11)*ps);pc.lineTo((widthMM-10)*ps,(heightMM-11)*ps);pc.stroke();
    pc.fillText('Printed: '+stamp+' IST',10*ps,(heightMM-6)*ps);pc.textAlign='center';pc.fillText('Page '+i+' of '+pageNo,widthMM/2*ps,(heightMM-6)*ps);pc.textAlign='right';pc.fillText('Sashi Nair',(widthMM-10)*ps,(heightMM-6)*ps);
    urls.push(URL.createObjectURL(await new Promise(resolve=>preview.toBlob(resolve,'image/jpeg',0.92))));preview.width=preview.height=1;
@@ -6721,10 +6758,21 @@ function mthPdfDownloadFile(){
  mthPdfStatus('Download requested. Your PDF also remains open here for viewing and sharing.');
 }
 function mthPdfCurrentProjectLabel(){return getActiveProject()?.name||'Project';}
+function mthVacantReportHeader(){
+ const report=document.getElementById('printableVacantReport');
+ const project=mthPdfCurrentProjectLabel();
+ return {
+  title:project+' - Vacant Plots',
+  heading:project+' | '+report.dataset.reportFacing,
+  filter:report.dataset.reportFilters
+ };
+}
 function mthPdfVacant(){
  updateReportTimestamp();updateVacantReport();
- const report=document.getElementById('printableVacantReport');
- return mthPdfFromElement(report,{title:mthPdfCurrentProjectLabel()+' - Vacant Plots',filter:report.dataset.reportFilters});
+ const report = document.getElementById('printableVacantReport');
+ const options = mthVacantReportHeader();
+ if (mthGetFaceFilter() === 'CORNER') options.title += ' - Corner Plots';
+ return mthPdfFromElement(report, options);
 }
 function mthPdfCostSheet(){updateReportTimestamp();renderReport();return mthPdfFromElement(document.getElementById('printableReport'),{title:mthPdfCurrentProjectLabel()+' - '+(document.getElementById('docTypeQuote')?.checked?'Estimate':'Booking'),filter:'Plots '+Array.from(document.getElementById('plotMultiSelect').selectedOptions).map(o=>o.value).join(', ')});}
 function mthPdfTeam(){if(!mthValidateTeamReportDates(true))return;generateAndPrintReport();document.getElementById('reportGeneratedDate').textContent=new Date().toLocaleDateString('en-IN');return mthPdfFromElement(document.getElementById('printableReportArea'),{title:'Team Performance and Attendance',landscape:true,filter:(document.getElementById('teamReportStartDate').value||'Beginning')+' to '+(document.getElementById('teamReportEndDate').value||'Latest')+' | '+(mthShowInactive()?'Including inactive members':'Active members')});}
