@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Madras Trading House | Plot Sales Monitor & Team · Release 2611_18_1527 IST</title>
+    <title>Madras Trading House | Plot Sales Monitor & Team · Release 2611_18_1628 IST</title>
 
     <!-- PWA manifest + theme color: required for Chrome to offer "Install app" -->
     <link rel="manifest" href="./manifest.json">
@@ -1137,16 +1137,53 @@
 @media screen { #printableVacantReport.mth-summary-collapsed .mth-range-banner .range-title { font-size:15px; } }
 @media screen and (max-width:767px) { #printableVacantReport .mth-vacant-finance-strip { font-size:10px; } #printableVacantReport .mth-summary-kpis .kpi-card .val { font-size:17px; } }
 </style>
+
+<style id="mth-inventory-layout">
+.mth-inventory-heading,.mth-inventory-actions,.mth-inventory-action-group,.mth-inventory-controls {
+    display:flex; flex-wrap:wrap; gap:6px; align-items:center;
+}
+.mth-inventory-heading { margin-bottom:8px; }
+.mth-inventory-heading h3 { margin:0; }
+.mth-inventory-actions { justify-content:space-between; margin-bottom:8px; }
+.mth-inventory-actions .btn { white-space:nowrap; }
+.mth-inventory-panel { margin:6px 0; padding:8px; border:1px solid #e0e8f2; border-radius:6px; background:#f1f5fb; }
+.mth-inventory-panel h4 { margin:0 0 6px; font-size:.8rem; }
+.mth-inventory-controls,.mth-facing-controls,.mth-area-controls { align-items:end; }
+.mth-facing-controls,.mth-area-controls,.mth-budget-controls { display:grid; gap:6px; min-width:0; }
+.mth-facing-controls { grid-template-columns:minmax(110px,1fr) minmax(100px,1fr); }
+.mth-area-controls { grid-template-columns:auto repeat(2,minmax(0,88px)) auto; }
+.mth-area-controls .btn { padding-inline:7px; }
+.mth-budget-controls { grid-template-columns:minmax(116px,1fr) minmax(136px,1.15fr) minmax(90px,.8fr); }
+.mth-inventory-pricing { display:grid; grid-template-columns:minmax(0,1.6fr) minmax(0,1fr); gap:12px; align-items:start; }
+.mth-project-offer { border-left:1px solid #dce5f0; padding-left:12px; }
+.mth-project-offer input { max-width:240px; border-color:#89a6d3; }
+.mth-inventory-panel .form-group,.mth-inventory-panel .form-group input,.mth-inventory-panel .form-group select { min-width:0; }
+.mth-inventory-panel .form-group input,.mth-inventory-panel .form-group select { width:100%; }
+.mth-inventory-hint { display:block; margin-top:5px; font-size:.75rem; color:#475569; }
+#mthBudgetWiden { margin-top:5px; }
+#mthBudgetWiden[hidden] { display:none; }
+.mth-plot-search { margin:8px 0; }
+.mth-plot-search-field { flex:1 1 160px; }
+@media(max-width:650px) {
+    .mth-inventory-pricing { grid-template-columns:minmax(0,1fr); gap:8px; }
+    .mth-project-offer { border-left:0; border-top:1px solid #dce5f0; padding:8px 0 0; }
+}
+@media(max-width:430px) {
+    .mth-budget-controls { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    .mth-facing-controls,.mth-area-controls { flex:1 1 100%; }
+    .mth-area-controls { grid-template-columns:auto repeat(2,minmax(0,1fr)) auto; }
+}
+</style>
 </head>
 <body>
 
 <div class="container">
 
-    <div class="app-brand-strip no-print" title="Release 2611_18_1527 IST">
+    <div class="app-brand-strip no-print" title="Release 2611_18_1628 IST">
         <img src="./icon-192.png" alt="Madras Trading House logo">
         <div class="app-brand-copy">
-            <strong>Madras Trading House</strong><!-- Release 2611_18_1527 IST; preserve approved header layout -->
-            <span>Plot Sales Monitor &amp; Team · Release 2611_18_1527 IST</span>
+            <strong>Madras Trading House</strong><!-- Release 2611_18_1628 IST; preserve approved header layout -->
+            <span>Plot Sales Monitor &amp; Team · Release 2611_18_1628 IST</span>
         </div>
     </div>
 
@@ -1194,29 +1231,30 @@
         <!-- TAB 1: PLOT INVENTORY MANAGEMENT & VACANT REPORT -->
         <div id="tabInventory" class="tab-content active">
             <div class="card no-print" id="inventorySection">
-                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; margin-bottom: 6px;">
-                    <div style="display: flex; align-items: center; gap: 6px;">
-                        <h3>📋 Plot Inventory Management</h3>
-                        <button id="toggleInventoryBtn" class="btn btn-outline" onclick="toggleInventoryView()" style="padding: 2px 5px; font-size: 0.68rem; min-height: 22px;">
-                            ▲ Collapse Inventory
-                        </button>
-                    </div>
-                    <div style="display: flex; gap: 4px; flex-wrap: wrap; align-items: center;">
-                        <label class="btn btn-success" style="cursor: pointer; margin: 0;">
-                            📁 CSV Import <input type="file" id="csvFileInput" accept=".csv" style="display: none;" onchange="importInventoryCSV(event)">
+                <div class="mth-inventory-heading">
+                    <h3>Plot Inventory Management</h3>
+                    <button id="toggleInventoryBtn" class="btn btn-outline" onclick="toggleInventoryView()">▼ Expand Inventory</button>
+                </div>
+                <div class="mth-inventory-actions" aria-label="Inventory actions">
+                    <div class="mth-inventory-action-group">
+                        <button class="btn btn-success" type="button" onclick="addPlot()">Add Plot</button>
+                        <label class="btn btn-outline" style="cursor: pointer; margin: 0;">
+                            CSV Import <input type="file" id="csvFileInput" accept=".csv" style="display: none;" onchange="importInventoryCSV(event)">
                         </label>
-                        <button class="btn btn-success" type="button" onclick="addPlot()">➕ Add Plot</button>
-                        <button type="button" class="btn" id="restoreDeletedPlotsBtn" onclick="mthRestoreDeletedPlot()" disabled>Restore Deleted (0)</button>
+                        <button type="button" class="btn btn-outline" id="restoreDeletedPlotsBtn" onclick="mthRestoreDeletedPlot()" disabled>Restore Deleted (0)</button>
                         <button type="button" class="btn btn-outline" id="mthOrderModeBtn" onclick="mthToggleManualPlotOrder()" title="Switch between automatic numerical order and manual row ordering">↕ Manual order: OFF</button>
+                    </div>
+                    <div class="mth-inventory-action-group">
                         <button type="button" class="btn" onclick="mthPdfVacant()">Preview / Print / Share PDF</button>
-                        <button type="button" class="btn btn-outline" onclick="mthOpenHistoryReport()">🖨️ Booking / Sold History</button>
-                        <button class="btn btn-whatsapp" title="Share a text summary via WhatsApp" onclick="shareVacantReportViaWhatsApp()">💬 WhatsApp</button>
+                        <button type="button" class="btn btn-outline" onclick="mthOpenHistoryReport()">Booking / Sold History</button>
+                        <button class="btn btn-whatsapp" title="Share a text summary via WhatsApp" onclick="shareVacantReportViaWhatsApp()">WhatsApp</button>
                     </div>
                 </div>
-
-                <div class="toolbar no-print" style="margin:6px 0;align-items:end" id="vacantAreaFilterBar">
-                    <strong style="font-size:.8rem">📐 Vacant plot view</strong>
-                    <div class="form-group"><label for="vacantFaceFilter">FACE</label><select id="vacantFaceFilter" onchange="updateVacantReport()" style="min-width:120px">
+                <div id="vacantAreaFilterBar" class="mth-inventory-panel">
+                    <h4>Vacant plot view</h4>
+                    <div class="mth-inventory-controls">
+                        <div class="mth-facing-controls">
+                            <div class="form-group"><label for="vacantFaceFilter">Facing</label><select id="vacantFaceFilter" onchange="updateVacantReport()">
                         <option value="">All directions</option>
                         <option value="CORNER">All corner plots</option>
                         <option value="NORTH">N — North</option><option value="NORTH EAST">NE — North East</option>
@@ -1224,24 +1262,42 @@
                         <option value="SOUTH">S — South</option><option value="SOUTH WEST">SW — South West</option>
                         <option value="WEST">W — West</option><option value="NORTH WEST">NW — North West</option>
                     </select></div>
-                    <div class="form-group"><label for="mthGroupingSelect">Group by</label><select id="mthGroupingSelect" onchange="updateVacantReport()"><option value="area">Area</option><option value="facing">FACE</option><option value="plot" selected>Plot number</option></select></div>
-                    <button type="button" id="mthAreaPrev" class="btn btn-outline" onclick="mthStepArea(-1)" title="Previous available plot size" aria-label="Previous available plot size">◀</button>
-                    <div class="form-group"><label for="vacantAreaFrom">From (SFT)</label><input id="vacantAreaFrom" type="number" min="0" step="1" placeholder="e.g. 600" style="width:100px" oninput="mthAreaFromChanged()"></div>
-                    <div class="form-group"><label for="vacantAreaTo">To (SFT)</label><input id="vacantAreaTo" type="number" min="0" step="1" placeholder="e.g. 700" style="width:100px" oninput="mthAreaToChanged()"></div>
-                    <button type="button" id="mthAreaNext" class="btn btn-outline" onclick="mthStepArea(1)" title="Next available plot size" aria-label="Next available plot size">▶</button>
-                    <button type="button" class="btn" onclick="mthApplyAreaFilter()">Apply</button>
-                    <button type="button" class="btn btn-outline" id="mthClearAllButton" onclick="mthClearAreaFilter()" title="Reset all view filters and temporary selections" >Clear all</button>
-                    <span id="vacantAreaMatches" style="font-weight:600;font-size:.75rem"></span>
+                            <div class="form-group"><label for="mthGroupingSelect">Group by</label><select id="mthGroupingSelect" onchange="updateVacantReport()"><option value="area">Area</option><option value="facing">FACE</option><option value="plot" selected>Plot number</option></select></div>
+                        </div>
+                        <div class="mth-area-controls">
+                            <button type="button" id="mthAreaPrev" class="btn btn-outline" onclick="mthStepArea(-1)" title="Previous available plot size" aria-label="Previous available plot size">◀</button>
+                            <div class="form-group"><label for="vacantAreaFrom">From (SFT)</label><input id="vacantAreaFrom" type="number" min="0" step="1" placeholder="e.g. 600" oninput="mthAreaFromChanged()"></div>
+                            <div class="form-group"><label for="vacantAreaTo">To (SFT)</label><input id="vacantAreaTo" type="number" min="0" step="1" placeholder="e.g. 700" oninput="mthAreaToChanged()"></div>
+                            <button type="button" id="mthAreaNext" class="btn btn-outline" onclick="mthStepArea(1)" title="Next available plot size" aria-label="Next available plot size">▶</button>
+                        </div>
+                        <div class="mth-inventory-action-group">
+                            <button type="button" class="btn" onclick="mthApplyAreaFilter()">Apply</button>
+                            <button type="button" class="btn btn-outline" id="mthClearAllButton" onclick="mthClearAreaFilter()" title="Reset all view filters and temporary selections" >Clear all</button>
+                        </div>
+                    </div>
+                    <span id="vacantAreaMatches" class="mth-inventory-hint"></span>
                 </div>
-                <div class="toolbar no-print" id="mthBudgetFilterBar" style="margin:6px 0;padding:8px;background:#f1f5f9;border-radius:6px;align-items:end">
-                    <div class="form-group"><label for="mthBudgetLakh">Total budget (₹ lakh)</label><input id="mthBudgetLakh" type="number" min="0.01" step="0.01" placeholder="e.g. 15" style="width:130px" oninput="updateVacantReport()"></div>
-                    <div class="form-group"><label for="mthBudgetMode">Match</label><select id="mthBudgetMode" onchange="updateVacantReport()"><option value="around">Around budget (±)</option><option value="upto">Up to budget</option></select></div>
-                    <div class="form-group"><label for="mthBudgetTolerance">± Amount (₹)</label><input id="mthBudgetTolerance" type="number" min="0" step="5000" value="25000" style="width:120px" oninput="updateVacantReport()"></div>
-                    <span id="mthBudgetSummary" aria-live="polite" style="flex-basis:100%;font-size:.78rem;font-weight:600">Includes plot cost, registration and documentation.</span>
-                    <button type="button" id="mthBudgetWiden" class="btn btn-outline" onclick="mthWidenBudget()" hidden>Widen range</button>
+                <div id="mthBudgetFilterBar" class="mth-inventory-panel mth-inventory-pricing">
+                    <div>
+                        <div class="mth-budget-controls">
+                            <div class="form-group"><label for="mthBudgetLakh">Total budget (₹ lakh)</label><input id="mthBudgetLakh" type="number" min="0.01" step="0.01" placeholder="e.g. 15" oninput="updateVacantReport()"></div>
+                            <div class="form-group"><label for="mthBudgetMode">Match</label><select id="mthBudgetMode" onchange="updateVacantReport()"><option value="around">Around budget (±)</option><option value="upto">Up to budget</option></select></div>
+                            <div class="form-group"><label for="mthBudgetTolerance">± Amount (₹)</label><input id="mthBudgetTolerance" type="number" min="0" step="5000" value="25000" oninput="updateVacantReport()"></div>
+                        </div>
+                        <span id="mthBudgetSummary" class="mth-inventory-hint" aria-live="polite">Includes plot cost, registration and documentation.</span>
+                        <button type="button" id="mthBudgetWiden" class="btn btn-outline" onclick="mthWidenBudget()" hidden>Widen range</button>
+                    </div>
+                    <div class="mth-project-offer">
+                        <div class="form-group">
+                            <label for="inventoryOfferSft">Project offer per sft (₹)</label>
+                            <input id="inventoryOfferSft" type="number" min="0" step="any" inputmode="decimal" required
+                                aria-describedby="mthProjectOfferHint" onchange="updateProjectOffer(this)" onkeydown="if(event.key==='Enter')this.blur()">
+                        </div>
+                        <span id="mthProjectOfferHint" class="mth-inventory-hint">Same offer as Project &amp; Bank Setup</span>
+                    </div>
                 </div>
-                <div class="toolbar no-print" style="margin:6px 0;align-items:end">
-                    <div class="form-group" style="flex:1;min-width:170px"><label for="mthPlotSearch">Find plot · current project · all statuses</label><input id="mthPlotSearch" type="search" placeholder="Plot numbers, e.g. 6, 16, 129/130" oninput="mthRenderPlotLookup()" onkeydown="if(event.key==='Escape'){this.value='';mthRenderPlotLookup();}"></div>
+                <div class="mth-inventory-controls mth-plot-search">
+                    <div class="form-group mth-plot-search-field"><label for="mthPlotSearch">Find plot · current project · all statuses</label><input id="mthPlotSearch" type="search" placeholder="Plot numbers, e.g. 6, 16, 129/130" oninput="mthRenderPlotLookup()" onkeydown="if(event.key==='Escape'){this.value='';mthRenderPlotLookup();}"></div>
                     <button type="button" class="btn btn-outline" onclick="document.getElementById('mthPlotSearch').value='';mthRenderPlotLookup();document.getElementById('mthPlotSearch').focus()">Clear search</button>
                 </div>
                 <div id="mthPlotLookupResults" class="no-print" aria-live="polite"></div>
@@ -1598,7 +1654,7 @@
                 <div class="form-grid" style="margin-top: 4px;">
                     <div class="form-group"><label>Project Name</label><input type="text" id="projName" oninput="updateData()"></div>
                     <div class="form-group"><label>Price / SFT (₹)</label><input type="number" id="priceSft" oninput="updateData()"></div>
-                    <div class="form-group"><label>Offer / SFT (₹)</label><input type="number" id="offerSft" oninput="updateData()"></div>
+                    <div class="form-group"><label for="offerSft">Offer / SFT (₹)</label><input type="number" id="offerSft" min="0" step="any" inputmode="decimal" required onchange="updateProjectOffer(this)" onkeydown="if(event.key==='Enter')this.blur()"></div>
                     <div class="form-group"><label>Corner</label><input type="number" id="cornerSft" oninput="updateData()"></div>
                     <div class="form-group"><label>Govt. Guide Value (₹)</label><input type="number" id="guideValue" oninput="updateData()"></div>
                     <div class="form-group"><label>Tax %</label><input type="number" id="taxPct" oninput="updateData()"></div>
@@ -2699,8 +2755,8 @@ function loadProjectToUI() {
     const p = getActiveProject();
     document.getElementById("projName").value = p.name || "";
     document.getElementById("priceSft").value = p.priceSft || 0;
-    document.getElementById("offerSft").value = p.offerSft !== undefined ? p.offerSft : 25;
-    document.getElementById("bookingOfferSft").value = document.getElementById("offerSft").value;
+    syncProjectOfferFields(p.offerSft ?? 25);
+    document.getElementById("bookingOfferSft").value = p.offerSft ?? 25;
     document.getElementById("cornerSft").value = p.cornerSft || 0;
     document.getElementById("guideValue").value = p.guideValue || 0;
     document.getElementById("taxPct").value = p.taxPct || 0;
@@ -2886,12 +2942,32 @@ function mthBookingProject() {
     return { ...project, offerSft: offer };
 }
 
+function syncProjectOfferFields(offer) {
+    document.getElementById("offerSft").value = offer;
+    document.getElementById("inventoryOfferSft").value = offer;
+}
+
+function updateProjectOffer(input) {
+    if (!input.reportValidity()) return;
+    const project = getActiveProject();
+    const previousOffer = project.offerSft ?? 25;
+    const offer = Number(input.value);
+    if (input.value === "" || !Number.isFinite(offer) || offer < 0) return;
+    project.offerSft = offer;
+    syncProjectOfferFields(offer);
+    const estimateOffer = document.getElementById("bookingOfferSft");
+    if (estimateOffer.value === "" || Number(estimateOffer.value) === Number(previousOffer)) estimateOffer.value = offer;
+    renderInventoryTable();
+    renderReport();
+    updateVacantReport();
+    updateReportTimestamp();
+    autoSaveState();
+}
+
 function updateData() {
     const p = getActiveProject();
     p.name = document.getElementById("projName").value;
     p.priceSft = parseFloat(document.getElementById("priceSft").value) || 0;
-    p.offerSft = parseFloat(document.getElementById("offerSft").value) || 0;
-    if (document.activeElement !== document.getElementById("bookingOfferSft")) document.getElementById("bookingOfferSft").value = p.offerSft;
     p.cornerSft = parseFloat(document.getElementById("cornerSft").value) || 0;
     p.guideValue = parseFloat(document.getElementById("guideValue").value) || 0;
     p.taxPct = parseFloat(document.getElementById("taxPct").value) || 0;
